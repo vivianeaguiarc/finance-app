@@ -1,4 +1,5 @@
 import { CreateUserUseCase } from "../use-cases/create-user.js";
+import validator from 'validator';
 
 export class CreateUserController {
     async execute(httpRequest) {
@@ -20,6 +21,26 @@ export class CreateUserController {
                     }
                 };
             }
+        }
+        // verificar tamanho de senha 
+        const passwordIsValid = params.password.length >= 6;
+        if(!passwordIsValid){
+            return {
+                statusCode: 400,
+                body: {
+                    errorMessage: 'Password must be at least 6 characters long'
+                }
+            };
+        }
+        // verificar email valido
+        const emailIsValid = validator.isEmail(params.email);
+        if (!emailIsValid) {
+            return {
+                statusCode: 400,
+                body: {
+                    errorMessage: 'Invalid email format. Please provide a valid email address.'
+                }
+            };
         }
         // chamar o use case
         const createUseCase = new CreateUserUseCase();
