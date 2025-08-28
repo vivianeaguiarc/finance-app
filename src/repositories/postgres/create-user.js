@@ -12,6 +12,6 @@ export class PostgresCreateUserRepository {
                 createUserParams.password
             ])
 
-        return results[0];
+        return results[0]; // retornar o usuario criado
     }
 }
