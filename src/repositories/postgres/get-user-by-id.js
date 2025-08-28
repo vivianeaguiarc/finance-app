@@ -1,3 +1,4 @@
+
 import {PostgresHelper} from '../../db/postgres/helper.js'
 export class PostgresGetUserByIdRepository {
     async execute(userId){
@@ -5,6 +6,6 @@ export class PostgresGetUserByIdRepository {
             'SELECT * FROM users WHERE id = $1',
             [userId]
         )
-        return user[0];
+        return user[0] || null;
     }
 }
