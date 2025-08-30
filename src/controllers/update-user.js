@@ -1,10 +1,9 @@
-import validator from 'validator'
-import { badRequest, serverError, ok } from './helpers/http.js'
 import { UpdateUserUseCase } from '../use-cases/update-user.js'
+import { badRequest, serverError, ok } from './helpers/http.js'
 import {
-  checkIfEmailIsValid,
-  checkIfIdIsValid,
-  checkIfPasswordIsValid,
+    checkIfEmailIsValid,
+    checkIfIdIsValid,
+    checkIfPasswordIsValid,
     emailIsAlreadyInUseResponse,
     invalidIdResponse,
     invalidPasswordResponse,
@@ -47,10 +46,7 @@ export class UpdateUserController {
                 }
             }
             const updateUserUseCase = new UpdateUserUseCase()
-            const updatedUser = await updateUserUseCase.execute(
-                userId,
-                params
-            )
+            const updatedUser = await updateUserUseCase.execute(userId, params)
             return ok(updatedUser)
         } catch (error) {
             console.error(error)

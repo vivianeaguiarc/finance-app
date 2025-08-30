@@ -1,27 +1,32 @@
+// index.js (raiz do app)
 import 'dotenv/config';
 import express from 'express';
-import { CreateUserController } from './src/controllers/create-user.js';
-import { GetUserByIdController } from './src/controllers/get-user-by-id.js';
-import { UpdateUserController } from './src/controllers/update-user.js';
+import {
+  CreateUserController,
+  GetUserByIdController,
+  UpdateUserController,
+} from './src/controllers/index.js'; // <- note o /index.js
 
 const app = express();
 app.use(express.json());
 
-app.post('/api/users', async (request, response) => {
-  const createUserController = new CreateUserController()
-  const {statusCode, body} = await createUserController.execute(request)
-  response.status(statusCode).send(body)
-})
-app.patch('/api/users/:userId', async (req, res) => { // << :userId
+app.post('/api/users', async (req, res) => {
+  const controller = new CreateUserController();
+  const { statusCode, body } = await controller.execute(req);
+  res.status(statusCode).send(body);
+});
+
+app.get('/api/users/:userId', async (req, res) => {
+  const controller = new GetUserByIdController();
+  const { statusCode, body } = await controller.execute(req);
+  res.status(statusCode).send(body);
+});
+
+app.patch('/api/users/:userId', async (req, res) => {
   const controller = new UpdateUserController();
   const { statusCode, body } = await controller.execute(req);
   res.status(statusCode).send(body);
 });
-app.get('/api/users/:userId', async (request, response) => {
-  const getUserByIdController = new GetUserByIdController();
-  const { statusCode, body } = await getUserByIdController.execute(request);
-  response.status(statusCode).send(body);
-});
-app.listen(process.env.PORT, () => {
-  console.log(`Listening on port ${process.env.PORT}`);
-});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
