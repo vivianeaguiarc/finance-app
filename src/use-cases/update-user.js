@@ -3,7 +3,7 @@ import { PostgresGetUserByEmailRepository } from "../repositories/postgres/get-u
 import { EmailAlreadyInUseError } from "../errors/user.js";
 import { PostgresUpdateUserRepository } from "../repositories/postgres/update-user.js";
 
-export class UpdateUserCase {
+export class UpdateUserUseCase  {
     async execute(userId, updateUserParams){
         // se o e-mail estiver sendo atualizado, verificar se ele ja está em uso
         if(updateUserParams.email){

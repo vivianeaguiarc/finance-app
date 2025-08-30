@@ -1,6 +1,6 @@
 import validator from 'validator'
-import { badRequest, serverError } from './helper.js'
-import { UpdateUserUseCase } from '../use-cases/update-user'
+import { badRequest, serverError, ok } from './helper.js'
+import { UpdateUserUseCase } from '../use-cases/update-user.js'
 
 export class UpdateUserController{
     async execute(httpRequest){
