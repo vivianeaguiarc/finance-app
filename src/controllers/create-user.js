@@ -1,4 +1,3 @@
-import { CreateUserUseCase } from '../use-cases/index.js'
 import { EmailAlreadyInUseError } from '../errors/user.js'
 import {
     checkIfPasswordIsValid,
@@ -11,10 +10,12 @@ import {
 } from './helpers/index.js'
 
 export class CreateUserController {
+    constructor(CreateUserUseCase) {
+        this.createUserUseCase = CreateUserUseCase
+    }
     async execute(httpRequest) {
         try {
             const params = httpRequest.body
-            // validar a requisição (campos obrigatorios e tamanho de senha)
             const requiredFields = [
                 'first_name',
                 'last_name',
@@ -26,20 +27,15 @@ export class CreateUserController {
                     return badRequest({ message: `Missing param: ${field}` })
                 }
             }
-            // verificar tamanho de senha
             const passwordIsValid = checkIfPasswordIsValid(params.password)
             if (!passwordIsValid) {
                 return invalidPasswordResponse()
             }
-            // verificar email valido
             const emailIsValid = checkIfEmailIsValid(params.email)
             if (!emailIsValid) {
                 return emailIsAlreadyInUseResponse()
             }
-            // chamar o use case
-            const createUseCase = new CreateUserUseCase()
-            const createdUser = await createUseCase.execute(params)
-            // retorna a resposta para o usuario
+            const createdUser = await this.createUserUseCase.execute(params)
             return created(createdUser)
         } catch (error) {
             if (error instanceof EmailAlreadyInUseError) {
