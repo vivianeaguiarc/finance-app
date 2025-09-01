@@ -1,4 +1,3 @@
-import { UpdateUserUseCase } from '../use-cases/index.js'
 import { badRequest, serverError, ok } from './helpers/http.js'
 import {
     checkIfEmailIsValid,
@@ -10,6 +9,9 @@ import {
 } from './helpers/user.js'
 
 export class UpdateUserController {
+    constructor(updateUserUseCase) {
+        this.updateUserUseCase = updateUserUseCase
+    }
     async execute(httpRequest) {
         try {
             const userId = httpRequest.params.userId
@@ -25,7 +27,7 @@ export class UpdateUserController {
                 'password',
             ]
             const someFieldsIsNotAllowed = Object.keys(params).some(
-                (field) => !allowedFields.includes(field)
+                (field) => !allowedFields.includes(field),
             )
 
             if (someFieldsIsNotAllowed) {
@@ -45,8 +47,11 @@ export class UpdateUserController {
                     return emailIsAlreadyInUseResponse()
                 }
             }
-            const updateUserUseCase = new UpdateUserUseCase()
-            const updatedUser = await updateUserUseCase.execute(userId, params)
+
+            const updatedUser = await this.updateUserUseCase.execute(
+                userId,
+                params,
+            )
             return ok(updatedUser)
         } catch (error) {
             console.error(error)
