@@ -5,7 +5,7 @@ export const invalidPasswordResponse = () =>
     badRequest({ message: 'Password must be at least 6 characters long' })
 
 export const emailIsAlreadyInUseResponse = () =>
-    badRequest({ message: 'Email already in use' }) // (mensagem condizente)
+    badRequest({ message: 'Email already in use' })
 
 export const invalidIdResponse = () =>
     badRequest({ message: 'The provided ID is not valid' })
