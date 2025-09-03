@@ -1,0 +1,17 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Faz o ESLint corrigir o que for possível ao salvar
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.fixAll.eslint": "always"
+  },
+
+  // Garante que o Prettier só roda se houver config no repo
+  "prettier.requireConfig": true,
+
+  // Linguagens validadas pelo ESLint
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
+}
