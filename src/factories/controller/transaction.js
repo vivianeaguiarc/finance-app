@@ -1,7 +1,5 @@
-import {
-  PostgresCreateTransactionRepository,
-  PostgresGetUserByIdRepository,
-} from '../../repositories/transaction/postgres-create-transaction-repository.js'
+import { PostgresCreateTransactionRepository } from '../../repositories/postgres/transaction/create-transaction.js'
+import { PostgresGetUserByIdRepository } from '../../repositories/postgres/user/get-user-by-id.js'
 import { CreateTransactionUseCase } from '../../use-cases/index.js'
 import { CreateTransactionController } from '../../controllers/index.js'
 
