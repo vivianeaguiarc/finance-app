@@ -16,12 +16,6 @@ export class CreateTransactionController {
       if (!params) {
         return badRequest({ message: 'Request body is missing.' })
       }
-      for (const field of requiredFields) {
-        // Use String() para converter o valor para string antes de usar .trim()
-        if (!params[field] || params[field].toString().trim().length === 0) {
-          return badRequest({ message: `Missing param: ${field}` })
-        }
-      }
 
       const userIdIsValid = checkIfIdIsValid(params.user_id)
       if (!userIdIsValid) {
