@@ -1,0 +1,23 @@
+{
+  "name": "financeapp",
+  "version": "1.0.0",
+  "description": "Aplicação de gestão de finanças ",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/vivianeaguiarc/finance-app.git"
+  },
+  "author": "Viviane Silva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vivianeaguiarc/finance-app/issues"
+  },
+  "homepage": "https://github.com/vivianeaguiarc/finance-app#readme",
+  "dependencies": {
+    "eslint": "^8.46.0"
+  }
+}
