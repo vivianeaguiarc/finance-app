@@ -21,4 +21,3 @@ export class PostgresCreateUserRepository {
         return createdUser[0]
     }
 }
-// adicionando mais validações ao create user controller
