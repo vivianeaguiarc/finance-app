@@ -17,8 +17,8 @@ export class CreateUserController {
                     return badRequest({ message: `Missing field: ${field}` })
                 }
             }
-            const passwordIsValid = params.password.length >= 6
-            if (!passwordIsValid) {
+            const passwordIsNotValid = params.password.length < 6
+            if (passwordIsNotValid) {
                 return badRequest({
                     message: 'Password must be at least 6 characters long.',
                 })
