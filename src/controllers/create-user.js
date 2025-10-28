@@ -1,6 +1,7 @@
 import { CreateUserUseCase } from '../use-cases/create-user.js'
 import validator from 'validator'
 import { badRequest, serverError, created } from './helper.js'
+import { EmailAlreadyInUseError } from '../errors/user.js'
 export class CreateUserController {
     async execute(httpRequest) {
         try {
@@ -33,8 +34,12 @@ export class CreateUserController {
             const createdUser = await createUserUseCase.execute(params)
             return created(createdUser)
         } catch (error) {
+            if (error instanceof EmailAlreadyInUseError) {
+                return badRequest({ message: error.message })
+            }
             console.error(error)
             return serverError()
         }
     }
 }
+// 13:19 de aprimorando as validações com erros customizados

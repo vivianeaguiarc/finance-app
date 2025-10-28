@@ -1,4 +1,4 @@
-import { PostgresHelper } from '../db/postgres/helper.js'
+import { PostgresHelper } from '../../db/postgres/helper.js'
 
 export class PostgresGetUserByEmailRepository {
     async execute(email) {
@@ -6,6 +6,6 @@ export class PostgresGetUserByEmailRepository {
             'SELECT * FROM users WHERE email = $1',
             [email],
         )
-        return user.rows[0]
+        return user[0]
     }
 }
