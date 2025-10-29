@@ -8,14 +8,14 @@ export const invalidPasswordResponse = () => {
 }
 
 export const emailIsAlreadyInUseResponse = () => {
-    badRequest({
+    return badRequest({
         message:
             'The provided email is already in use. Please use a different email address.',
     })
 }
 
 export const invalidIdResponse = () => {
-    badRequest({
+    return badRequest({
         message: 'The provided id is not valid.',
     })
 }
