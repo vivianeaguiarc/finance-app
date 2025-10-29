@@ -1,7 +1,11 @@
 import { CreateUserUseCase } from '../use-cases/create-user.js'
-import validator from 'validator'
-import { badRequest, serverError, created } from './helper.js'
+import { badRequest, serverError, created } from './helpers/http.js'
 import { EmailAlreadyInUseError } from '../errors/user.js'
+import {
+    checkIfEmailIsValid,
+    emailIsAlreadyInUseResponse,
+    InvalidPasswordResponse,
+} from './helpers/user.js'
 export class CreateUserController {
     async execute(httpRequest) {
         try {
@@ -17,18 +21,13 @@ export class CreateUserController {
                     return badRequest({ message: `Missing field: ${field}` })
                 }
             }
-            const passwordIsNotValid = params.password.length < 6
-            if (passwordIsNotValid) {
-                return badRequest({
-                    message: 'Password must be at least 6 characters long.',
-                })
+            const passwordIsValid = checkIfEmailIsValid(params.password)
+            if (!passwordIsValid) {
+                return InvalidPasswordResponse()
             }
-            const eamilIsValidd = validator.isEmail(params.email)
+            const eamilIsValidd = checkIfEmailIsValid(params.email)
             if (!eamilIsValidd) {
-                return badRequest({
-                    message:
-                        'Invalid email format. Please provide a valid email address.',
-                })
+                return emailIsAlreadyInUseResponse()
             }
             const createUserUseCase = new CreateUserUseCase()
             const createdUser = await createUserUseCase.execute(params)
