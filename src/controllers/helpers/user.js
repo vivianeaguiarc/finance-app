@@ -3,8 +3,7 @@ import validator from 'validator'
 
 export const invalidPasswordResponse = () => {
     return badRequest({
-        message:
-            'Password must be at least 8 characters long and include a number and a special character.',
+        message: 'Password must be at least 6 characters long.',
     })
 }
 

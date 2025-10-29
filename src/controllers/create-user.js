@@ -7,6 +7,7 @@ import {
     badRequest,
     serverError,
     created,
+    checkIfPasswordIsValid,
 } from './helpers/index.js'
 export class CreateUserController {
     async execute(httpRequest) {
@@ -23,7 +24,7 @@ export class CreateUserController {
                     return badRequest({ message: `Missing field: ${field}` })
                 }
             }
-            const passwordIsValid = checkIfEmailIsValid(params.password)
+            const passwordIsValid = checkIfPasswordIsValid(params.password)
             if (!passwordIsValid) {
                 return invalidPasswordResponse()
             }
