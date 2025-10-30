@@ -7,4 +7,3 @@ export class GetUserByIdUseCase {
         return user
     }
 }
-// aplicando injecao de dependencia na nossa aplicacao
