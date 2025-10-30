@@ -1,13 +1,42 @@
 import 'dotenv/config'
 import express from 'express'
-import { CreateUserController } from './src/controllers/create-user.js'
+import {
+    makeDeleteUserController,
+    makeGetUserByIdController,
+    makeCreateUserController,
+    makeUpdateUserController,
+} from './src/factories/controllers/user.js'
+import { makeCreateTransactionController } from './src/factories/controllers/transaction.js'
 
 const app = express()
 app.use(express.json())
 
+app.get('/api/users/:userId', async (request, response) => {
+    const gettUserByIdController = makeGetUserByIdController()
+    const { statusCode, body } = await gettUserByIdController.execute(request)
+    response.status(statusCode).send(body)
+})
+
 app.post('/api/users', async (request, response) => {
-    const createUserController = new CreateUserController()
+    const createUserController = makeCreateUserController()
     const { statusCode, body } = await createUserController.execute(request)
+    response.status(statusCode).send(body)
+})
+app.patch('/api/users/:userId', async (request, response) => {
+    const updateUserController = makeUpdateUserController()
+    const { statusCode, body } = await updateUserController.execute(request)
+    response.status(statusCode).send(body)
+})
+
+app.delete('/api/users/:userId', async (request, response) => {
+    const deleteUserController = makeDeleteUserController()
+    const { statusCode, body } = await deleteUserController.exceute(request)
+    response.status(statusCode).send(body)
+})
+app.post('/api/transactions', async (request, response) => {
+    const createTransactionController = makeCreateTransactionController()
+    const { statusCode, body } =
+        await createTransactionController.execute(request)
     response.status(statusCode).send(body)
 })
 
