@@ -13,16 +13,12 @@ export class CreateTransactionController {
     async execute(httpRequest) {
         try {
             const params = httpRequest.body
-            const requiredFields = [
-                'id',
-                'user_id',
-                'name',
-                'date',
-                'amount',
-                'type',
-            ]
+            const requiredFields = ['user_id', 'name', 'date', 'amount', 'type']
             for (const field of requiredFields) {
-                if (!params[field] || params[field].trim().length === 0) {
+                if (
+                    !params[field] ||
+                    params[field].toString().trim().length === 0
+                ) {
                     return badRequest({
                         message: `Missing or empty field: ${field}`,
                     })
@@ -50,9 +46,9 @@ export class CreateTransactionController {
                     message: 'The amount must be a valid currency.',
                 })
             }
-            const type = params.type.trim().toUppercase()
+            const type = params.type.trim().toUpperCase()
             const typesIsValid = ['EARNING', 'EXPENSE', 'INVESTMENT'].includes(
-                params.type,
+                type,
             )
             if (!typesIsValid) {
                 return badRequest({

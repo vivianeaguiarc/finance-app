@@ -6,6 +6,7 @@ import {
     makeCreateUserController,
     makeUpdateUserController,
 } from './src/factories/controllers/user.js'
+import { makeCreateTransactionController } from './src/factories/controllers/transaction.js'
 
 const app = express()
 app.use(express.json())
@@ -32,6 +33,13 @@ app.delete('/api/users/:userId', async (request, response) => {
     const { statusCode, body } = await deleteUserController.exceute(request)
     response.status(statusCode).send(body)
 })
+app.post('/api/transactions', async (request, response) => {
+    const createTransactionController = makeCreateTransactionController()
+    const { statusCode, body } =
+        await createTransactionController.execute(request)
+    response.status(statusCode).send(body)
+})
+
 app.listen(3000, () => {
     console.log(`Server running on port ${process.env.PORT || 3000}`)
 })
