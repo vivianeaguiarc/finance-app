@@ -7,6 +7,7 @@ import {
     serverError,
     created,
     checkIfPasswordIsValid,
+    validateRequiredFields,
 } from '../helpers/index.js'
 export class CreateUserController {
     constructor(createUserUseCase) {
@@ -21,10 +22,12 @@ export class CreateUserController {
                 'email',
                 'password',
             ]
-            for (const field of requiredFields) {
-                if (!params[field] || params[field].trim().length === 0) {
-                    return badRequest({ message: `Missing field: ${field}` })
-                }
+            const { ok: requiredFieldsWhereProvider, missingField } =
+                validateRequiredFields(params, requiredFields)
+            if (!requiredFieldsWhereProvider) {
+                return badRequest({
+                    message: `The field ${missingField} is required`,
+                })
             }
             const passwordIsValid = checkIfPasswordIsValid(params.password)
             if (!passwordIsValid) {

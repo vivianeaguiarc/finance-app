@@ -16,13 +16,11 @@ export class CreateTransactionController {
             const params = httpRequest.body
             const requiredFields = ['user_id', 'name', 'date', 'amount', 'type']
 
-            const requiredFieldsValidation = validateRequiredFields(
-                params,
-                requiredFields,
-            )
-            if (!requiredFieldsValidation.ok) {
+            const { ok: requiredFieldsWhereProvider, missingField } =
+                validateRequiredFields(params, requiredFields)
+            if (!requiredFieldsWhereProvider) {
                 return badRequest({
-                    message: `The field ${requiredFieldsValidation.missingField} is required`,
+                    message: `The field ${missingField.missingField} is required`,
                 })
             }
             const useridIsValid = checkIfIdIsValid(params.user_id)
