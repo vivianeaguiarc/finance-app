@@ -8,13 +8,13 @@ import {
 } from '../helpers/index.js'
 import { UserNotFoundError } from '../../errors/user.js'
 
-export class GetTransactionsByUserId {
+export class GetTransactionsByUserIdController {
     constructor(getTransactionsByUserIdUseCase) {
         this.getTransactionsByUserIdUseCase = getTransactionsByUserIdUseCase
     }
     async execute(httpRequest) {
         try {
-            const userId = httpRequest.params.userId
+            const userId = httpRequest.query.useId
             if (!userId) {
                 return requiredFieldIsMissingResponse('userId')
             }
