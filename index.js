@@ -9,6 +9,7 @@ import {
 import {
     makeCreateTransactionController,
     makeGetTransactionsByUserIdController,
+    makeUpdateTransactionController,
 } from './src/factories/controllers/transaction.js'
 
 const app = express()
@@ -50,7 +51,12 @@ app.post('/api/transactions', async (request, response) => {
         await createTransactionController.execute(request)
     response.status(statusCode).send(body)
 })
-
+app.patch('/api/transactions/:transactionId', async (request, response) => {
+    const updateTransactionController = makeUpdateTransactionController()
+    const { statusCode, body } =
+        await updateTransactionController.execute(request)
+    response.status(statusCode).send(body)
+})
 app.listen(3000, () => {
     console.log(`Server running on port ${process.env.PORT || 3000}`)
 })
