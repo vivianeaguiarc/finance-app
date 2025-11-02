@@ -11,3 +11,6 @@ export const createdUserSchema = z.object({
         message: 'Password must be at least 6 characters long',
     }),
 })
+export const updatedUserSchema = createdUserSchema.partial().strict({
+    message: 'Some fields are not allowed to be updated',
+})

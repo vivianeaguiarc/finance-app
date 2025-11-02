@@ -1,15 +1,13 @@
 import { EmailAlreadyInUseError } from '../../errors/user.js'
+import { updatedUserSchema } from '../../schemas/user.js'
 import {
-    checkIfEmailIsValid,
     checkIfIdIsValid,
-    checkIfPasswordIsValid,
-    emailIsAlreadyInUseResponse,
     invalidIdResponse,
-    invalidPasswordResponse,
     badRequest,
     ok,
     serverError,
 } from '../helpers/index.js'
+import { ZodError } from 'zod'
 
 export class UpdateUserController {
     constructor(updateUserUseCase) {
@@ -26,27 +24,7 @@ export class UpdateUserController {
             }
             const params = httpRequest.body
 
-            const allowFields = ['first_name', 'last_name', 'email', 'password']
-            const someFieldIsNotAllowed = Object.keys(params).some(
-                (field) => !allowFields.includes(field),
-            )
-            if (someFieldIsNotAllowed) {
-                return badRequest({
-                    message: 'Some fields are not allowed to be updated',
-                })
-            }
-            if (params.password) {
-                const passwordIsValid = checkIfPasswordIsValid(params.password)
-                if (!passwordIsValid) {
-                    return invalidPasswordResponse()
-                }
-            }
-            if (params.email) {
-                const emailIsValid = checkIfEmailIsValid(params.email)
-                if (!emailIsValid) {
-                    return emailIsAlreadyInUseResponse()
-                }
-            }
+            await updatedUserSchema.parseAsync(params)
             const updatedUser = await this.updateUserUseCase.execute(
                 userId,
                 params,
@@ -54,6 +32,11 @@ export class UpdateUserController {
             return ok(updatedUser)
         } catch (error) {
             console.error(error)
+            if (error instanceof ZodError) {
+                return badRequest({
+                    message: error.issues[0].message,
+                })
+            }
             if (error instanceof EmailAlreadyInUseError) {
                 return badRequest({ message: error.message })
             }
