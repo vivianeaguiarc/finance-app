@@ -29,7 +29,8 @@
     "eslint-plugin-promise": "^6.1.1",
     "git-commit-msg-linter": "^5.0.4",
     "husky": "^8.0.3",
-    "lint-staged": "^13.2.3"
+    "lint-staged": "^13.2.3",
+    "prisma": "^6.18.0"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
