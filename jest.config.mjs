@@ -1,7 +1,8 @@
-/** @type {import('jest').Config} */
-const config = {
-  coverageDirectory: "coverage",
-  coverageProvider: "v8",
-};
-
-export default config;
+// jest.config.mjs
+export default {
+    testEnvironment: 'node',
+    transform: {}, // sem Babel
+    coverageDirectory: 'coverage',
+    coverageProvider: 'v8',
+    setupFilesAfterEnv: ['./jest.setup.mjs'],
+}
