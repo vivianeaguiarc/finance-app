@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker'
 import { CreateUserController } from './create-user.js'
 
 describe('Create User Controller', () => {
@@ -11,10 +12,10 @@ describe('Create User Controller', () => {
         createUserController.createUserUseCase = new CreateUserUseCaseStub()
         const httpRequest = {
             body: {
-                first_name: 'Viviane',
-                last_name: 'Silva',
-                email: 'viviane@zmail.com',
-                password: 'secure1234',
+                first_name: faker.person.firstName(),
+                last_name: faker.person.lastName(),
+                email: faker.internet.email(),
+                password: faker.internet.password(),
             },
         }
         const result = await createUserController.execute(httpRequest)
@@ -26,9 +27,9 @@ describe('Create User Controller', () => {
         const createUserController = new CreateUserController(createUserUseCase)
         const httpRequest = {
             body: {
-                last_name: 'Silva',
-                email: 'viviane@zmail.com',
-                password: 'secure1234',
+                last_name: faker.person.lastName(),
+                email: faker.internet.email(),
+                password: faker.internet.password(),
             },
         }
         const result = await createUserController.execute(httpRequest)
@@ -39,9 +40,9 @@ describe('Create User Controller', () => {
         const createUserController = new CreateUserController(createUserUseCase)
         const httpRequest = {
             body: {
-                last_name: 'Aguiar',
-                email: 'viviane@zmail.com',
-                password: 'secure1234',
+                last_name: faker.person.lastName(),
+                email: faker.internet.email(),
+                password: faker.internet.password(),
             },
         }
         const result = await createUserController.execute(httpRequest)
@@ -52,9 +53,10 @@ describe('Create User Controller', () => {
         const createUserController = new CreateUserController(createUserUseCase)
         const httpRequest = {
             body: {
-                first_name: 'Viviane',
-                last_name: 'Silva',
-                password: 'secure1234',
+                first_name: faker.person.firstName(),
+                last_name: faker.person.lastName(),
+                email: 'invalid-email',
+                password: faker.internet.password(),
             },
         }
         const result = await createUserController.execute(httpRequest)
@@ -65,9 +67,10 @@ describe('Create User Controller', () => {
         const createUserController = new CreateUserController(createUserUseCase)
         const httpRequest = {
             body: {
-                first_name: 'Viviane',
-                last_name: 'Silva',
-                email: 'viviane@zmail.com',
+                first_name: faker.person.firstName(),
+                last_name: faker.person.lastName(),
+                email: faker.internet.email(),
+                password: faker.internet.password({ length: 3 }),
             },
         }
         const result = await createUserController.execute(httpRequest)
@@ -78,10 +81,10 @@ describe('Create User Controller', () => {
         const createUserController = new CreateUserController(createUserUseCase)
         const httpRequest = {
             body: {
-                first_name: 'Viviane',
-                last_name: 'Silva',
-                email: 'viviane@zmail.com',
-                password: 'secure1234',
+                first_name: faker.person.firstName(),
+                last_name: faker.person.lastName(),
+                email: faker.internet.email(),
+                password: faker.internet.password({ length: 7 }),
             },
         }
         const executeSpy = jest.spyOn(createUserUseCase, 'execute')
