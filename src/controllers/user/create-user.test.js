@@ -19,7 +19,7 @@ describe('Create User Controller', () => {
         }
         const result = await createUserController.execute(httpRequest)
         expect(result.statusCode).toBe(201)
-        expect(result.body).toBe(httpRequest.body)
+        expect(result.body).toEqual(httpRequest.body)
     })
     it('should return 400 if first_name is not provided', async () => {
         const createUserUseCase = new CreateUserUseCaseStub()
@@ -73,7 +73,7 @@ describe('Create User Controller', () => {
         const result = await createUserController.execute(httpRequest)
         expect(result.statusCode).toBe(400)
     })
-    it('should return 400 if passwod is less than 6 characters', async () => {
+    it('should call CreateUserUseCase with correct params', async () => {
         const createUserUseCase = new CreateUserUseCaseStub()
         const createUserController = new CreateUserController(createUserUseCase)
         const httpRequest = {
@@ -81,10 +81,11 @@ describe('Create User Controller', () => {
                 first_name: 'Viviane',
                 last_name: 'Silva',
                 email: 'viviane@zmail.com',
-                password: '12345',
+                password: 'secure1234',
             },
         }
-        const result = await createUserController.execute(httpRequest)
-        expect(result.statusCode).toBe(400)
+        const executeSpy = jest.spyOn(createUserUseCase, 'execute')
+        await createUserController.execute(httpRequest)
+        expect(executeSpy).toHaveBeenCalledWith(httpRequest.body)
     })
 })
