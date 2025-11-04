@@ -29,7 +29,7 @@ model Transaction {
 }
 
 enum TransactionType {
-  INCOME
+  EARNING
   EXPENSE
   INVESTMENT
 }
