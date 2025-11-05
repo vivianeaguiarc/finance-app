@@ -103,4 +103,19 @@ describe('Create TransactionController', () => {
         })
         expect(response.statusCode).toBe(400)
     })
+    it('should return 400 when amount is not currency', async () => {
+        const { sut } = makeSut()
+        const response = await sut.execute({
+            body: { ...baseHttpRequest.body, amount: 'invalid_amount' },
+        })
+        expect(response.statusCode).toBe(400)
+    })
+    it('should return 500 if CreateTransactionUseCase throws', async () => {
+        const { sut, createTransactionUseCase } = makeSut()
+        jest.spyOn(createTransactionUseCase, 'execute').mockRejectedValueOnce(
+            new Error(),
+        )
+        const result = await sut.execute(baseHttpRequest)
+        expect(result.statusCode).toBe(500)
+    })
 })
