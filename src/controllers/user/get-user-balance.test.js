@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { GetUserBalanceController } from './get-user-balance'
+import { GetUserBalanceController } from './get-user-balance.js'
 
 describe('GetUserBalanceController', () => {
     class GetUserBalanceUseCaseStub {

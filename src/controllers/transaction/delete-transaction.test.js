@@ -1,4 +1,5 @@
-import { DeleteTransactionController } from './delete-transaction'
+import { DeleteTransactionController } from './delete-transaction.js'
+
 import { faker } from '@faker-js/faker'
 
 describe('Delete Transaction Controller', () => {
@@ -42,5 +43,15 @@ describe('Delete Transaction Controller', () => {
             params: { transactionId: faker.string.uuid() },
         })
         expect(response.statusCode).toBe(404)
+    })
+    it('should return 500 when use case throws', async () => {
+        const { sut, deleteTransactionUseCase } = makeSut()
+        jest.spyOn(deleteTransactionUseCase, 'execute').mockRejectedValueOnce(
+            new Error(),
+        )
+        const response = await sut.execute({
+            params: { transactionId: faker.string.uuid() },
+        })
+        expect(response.statusCode).toBe(500)
     })
 })
