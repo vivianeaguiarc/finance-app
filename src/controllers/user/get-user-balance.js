@@ -17,9 +17,7 @@ export class GetUserBalanceController {
             if (!idIsValid) {
                 return invalidIdResponse()
             }
-            const userBalance = await this.getUserBalanceUseCase.execute({
-                userId: userid,
-            })
+            const userBalance = await this.getUserBalanceUseCase.execute(userid)
             return ok(userBalance)
         } catch (error) {
             // Se o caso de uso retornou null, o controller pode lançar manualmente um erro específico
