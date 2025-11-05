@@ -34,4 +34,13 @@ describe('Get Transaction By User Id Controller', () => {
         const response = await sut.execute(baseHttpRequest)
         expect(response.statusCode).toBe(200)
     })
+    it('should return 400 when the id transaction id is invalid', async () => {
+        const { sut } = makeSut()
+        const httpRequest = {
+            ...baseHttpRequest,
+            params: { transactionId: 'invalid-id' },
+        }
+        const response = await sut.execute(httpRequest)
+        expect(response.statusCode).toBe(400)
+    })
 })
