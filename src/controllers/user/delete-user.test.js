@@ -32,4 +32,11 @@ describe('Delete User Controller', () => {
         const result = await sut.exceute(httpRequest)
         expect(result.statusCode).toBe(200)
     })
+    it('shoult return 400 if id is invalid ', async () => {
+        const { sut } = makeSut()
+        const result = await sut.exceute({
+            params: { userId: 'invalid_id' },
+        })
+        expect(result.statusCode).toBe(400)
+    })
 })
