@@ -68,4 +68,5 @@ describe('Get Transaction By User Id Controller', () => {
         await sut.execute({ query: { userId: userId } })
         expect(executeSpy).toHaveBeenCalledWith(userId)
     })
+    it
 })

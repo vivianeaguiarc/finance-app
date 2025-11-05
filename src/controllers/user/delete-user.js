@@ -10,7 +10,7 @@ export class DeleteUserController {
     constructor(deleteUserUseCase) {
         this.deleteUserUseCase = deleteUserUseCase
     }
-    async exceute(httpRequest) {
+    async execute(httpRequest) {
         try {
             const userId = httpRequest.params.userId
             const isIsValid = checkIfIdIsValid(userId)
