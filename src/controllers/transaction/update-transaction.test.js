@@ -1,0 +1,37 @@
+import { faker } from '@faker-js/faker'
+import { UpdateTransactionController } from './update-transaction.js'
+
+describe('Get Transaction By User Id Controller', () => {
+    class UpdateTransactionUseCasesStub {
+        async execute() {
+            return {
+                user_id: faker.string.uuid(),
+                id: faker.string.uuid(),
+                name: faker.commerce.productName(),
+                date: faker.date.anytime().toISOString(),
+                amount: Number(faker.finance.amount()),
+                type: 'EXPENSE',
+            }
+        }
+    }
+    const makeSut = () => {
+        const updateTransactionUseCase = new UpdateTransactionUseCasesStub()
+        const sut = new UpdateTransactionController(updateTransactionUseCase)
+        return { sut, updateTransactionUseCase }
+    }
+    const baseHttpRequest = {
+        params: { transactionId: faker.string.uuid() },
+        body: {
+            name: faker.commerce.productName(),
+            date: faker.date.anytime().toISOString(),
+            amount: Number(faker.finance.amount()),
+            type: 'EXPENSE',
+        },
+    }
+
+    it('should return 200 when updating a transaction successfully', async () => {
+        const { sut } = makeSut()
+        const response = await sut.execute(baseHttpRequest)
+        expect(response.statusCode).toBe(200)
+    })
+})
