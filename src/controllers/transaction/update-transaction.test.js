@@ -79,4 +79,14 @@ describe('Get Transaction By User Id Controller', () => {
         const response = await sut.execute(httpRequest)
         expect(response.statusCode).toBe(400)
     })
+    it('should return 500 when the use case throws', async () => {
+        const { sut, updateTransactionUseCase } = makeSut()
+        jest.spyOn(updateTransactionUseCase, 'execute').mockImplementationOnce(
+            () => {
+                throw new Error()
+            },
+        )
+        const response = await sut.execute(baseHttpRequest)
+        expect(response.statusCode).toBe(500)
+    })
 })
