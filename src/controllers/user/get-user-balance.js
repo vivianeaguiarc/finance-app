@@ -22,11 +22,13 @@ export class GetUserBalanceController {
             })
             return ok(userBalance)
         } catch (error) {
-            if (error instanceof Error) {
-                return userNotFoundResponse()
+            // Se o caso de uso retornou null, o controller pode lançar manualmente um erro específico
+            if (error && error.name === 'UserNotFoundError') {
+                return userNotFoundResponse() // 404
             }
+
             console.error(error)
-            return serverError()
+            return serverError() // 500 para qualquer outro erro genérico
         }
     }
 }

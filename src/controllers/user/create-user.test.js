@@ -4,7 +4,7 @@ import { EmailAlreadyInUseError } from '../../errors/user.js'
 
 describe('Create User Controller', () => {
     class CreateUserUseCaseStub {
-        execute(user) {
+        async execute(user) {
             return user
         }
     }
@@ -78,7 +78,7 @@ describe('Create User Controller', () => {
         const { sut, createUserUseCase } = makeSut()
         const executeSpy = jest
             .spyOn(createUserUseCase, 'execute')
-            .mockImplementationOnce(() => {
+            .mockRejectedValueOnce(() => {
                 {
                     throw new Error()
                 }
@@ -88,9 +88,9 @@ describe('Create User Controller', () => {
     })
     it('should return 500 if CreateUserUseCase throws EmailIsAlreadyInUse error', async () => {
         const { sut, createUserUseCase } = makeSut()
-        jest.spyOn(createUserUseCase, 'execute').mockImplementationOnce(() => {
-            throw new EmailAlreadyInUseError(httpRequest.body.email)
-        })
+        jest.spyOn(createUserUseCase, 'execute').mockRejectedValueOnce(
+            new EmailAlreadyInUseError(httpRequest.body.email),
+        )
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(400)
     })
