@@ -39,7 +39,12 @@ describe('Create TransactionController', () => {
         },
     }
 
-    it('should return 201 when creating transaction successfully', async () => {
+    it('should return 201 when creating transaction successfully (expense)', async () => {
+        const { sut } = makeSut()
+        const result = await sut.execute(baseHttpRequest) // ← usa o request existente
+        expect(result.statusCode).toBe(201)
+    })
+    it('should return 201 when creating transaction successfully (earning)', async () => {
         const { sut } = makeSut()
         const result = await sut.execute(baseHttpRequest) // ← usa o request existente
         expect(result.statusCode).toBe(201)
