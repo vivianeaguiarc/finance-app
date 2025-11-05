@@ -45,3 +45,9 @@ export const createdTransactionSchema = z.object({
             }),
         ),
 })
+export const updateTransactionSchema = createdTransactionSchema
+    .omit({ user_id: true })
+    .partial()
+    .strict({
+        message: 'Unallowed field(s) in the transaction update',
+    })
