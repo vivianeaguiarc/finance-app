@@ -55,4 +55,16 @@ describe('Get Transaction By User Id Controller', () => {
         const response = await sut.execute(httpRequest)
         expect(response.statusCode).toBe(400)
     })
+    it('should return 400 when the amount is invalid', async () => {
+        const { sut } = makeSut()
+        const httpRequest = {
+            ...baseHttpRequest,
+            body: {
+                ...baseHttpRequest.body,
+                amount: 'invalid-amount',
+            },
+        }
+        const response = await sut.execute(httpRequest)
+        expect(response.statusCode).toBe(400)
+    })
 })
