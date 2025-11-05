@@ -64,4 +64,17 @@ describe('UpdateUserController', () => {
         const result = await sut.execute(invalidIdRequest)
         expect(result.statusCode).toBe(400)
     })
+    it('should return 400 when an unallowed field is provided', async () => {
+        const { sut } = makeSut()
+        const invalidIdRequest = {
+            ...httpRequest,
+            params: { userId: 'invalid_id' },
+            body: {
+                ...httpRequest.body,
+                unallowed_field: 'unallowed_value',
+            },
+        }
+        const result = await sut.execute(invalidIdRequest)
+        expect(result.statusCode).toBe(400)
+    })
 })
