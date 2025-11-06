@@ -1,7 +1,7 @@
-import { uuid } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
 
 export class IdGeneratorAdapter {
     execute() {
-        return uuid.v4()
+        return uuidv4()
     }
 }
