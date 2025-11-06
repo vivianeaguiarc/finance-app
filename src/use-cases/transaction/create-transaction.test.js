@@ -102,4 +102,13 @@ describe('CreateTransactionUseCase', () => {
             new UserNotFoundError(createTransactionParams.user_id),
         )
     })
+    it('should throw if GetUserByIdRepository throws', async () => {
+        const { sut, getUserByIdRepository, createTransactionParams } =
+            makeSut()
+        jest.spyOn(getUserByIdRepository, 'execute').mockRejectedValueOnce(
+            new Error(),
+        )
+        const promise = sut.execute(createTransactionParams)
+        await expect(promise).rejects.toThrow()
+    })
 })
