@@ -54,4 +54,19 @@ describe('GetUserBalanceUseCase', () => {
             `User with id ${userId} not found.`,
         )
     })
+    it('should call GetUserBalanceRepository with correct values', async () => {
+        const { sut, getUserBalanceRepository } = makeSut()
+        const getBalanceSpy = jest.spyOn(getUserBalanceRepository, 'execute')
+        const userId = faker.string.uuid()
+        await sut.execute(userId)
+        expect(getBalanceSpy).toHaveBeenCalledWith(userId)
+    })
+    it('should throw if GetUserBalanceRepository throws', async () => {
+        const { sut, getUserBalanceRepository } = makeSut()
+        jest.spyOn(getUserBalanceRepository, 'execute').mockRejectedValueOnce(
+            new Error(),
+        )
+        const promise = sut.execute(faker.string.uuid())
+        await expect(promise).rejects.toThrow()
+    })
 })
