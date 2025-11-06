@@ -29,12 +29,12 @@ describe('Delete User Controller', () => {
     it('should return 200 when deleting a user successfully', async () => {
         const { sut } = makeSut()
 
-        const result = await sut.exceute(httpRequest)
+        const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(200)
     })
     it('shoult return 400 if id is invalid ', async () => {
         const { sut } = makeSut()
-        const result = await sut.exceute({
+        const result = await sut.execute({
             params: { userId: 'invalid_id' },
         })
         expect(result.statusCode).toBe(400)
@@ -42,7 +42,7 @@ describe('Delete User Controller', () => {
     it('shoult return 404 if user is not found ', async () => {
         const { sut, deleteUserUseCase } = makeSut()
         jest.spyOn(deleteUserUseCase, 'execute').mockResolvedValueOnce(null)
-        const result = await sut.exceute(httpRequest)
+        const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(404)
     })
     it('shoult return 500 if DeleteUserUseCase throws', async () => {
@@ -50,7 +50,13 @@ describe('Delete User Controller', () => {
         jest.spyOn(deleteUserUseCase, 'execute').mockRejectedValueOnce(
             new Error(),
         )
-        const result = await sut.exceute(httpRequest)
+        const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(500)
+    })
+    it('shoult call DeleteUserUseCase with correct values', async () => {
+        const { sut, deleteUserUseCase } = makeSut()
+        const executeSpy = jest.spyOn(deleteUserUseCase, 'execute')
+        await sut.execute(httpRequest)
+        expect(executeSpy).toHaveBeenCalledWith(httpRequest.params.userId)
     })
 })

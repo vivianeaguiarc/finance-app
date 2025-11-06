@@ -1,6 +1,6 @@
 import {
     CreateTransactionController,
-    GetTransactionsByUserIdController,
+    GetTransactionByUserIdController,
     UpdateTransactionController,
     DeleteTransactionController,
 } from '../../controllers/index.js'
@@ -13,18 +13,21 @@ import {
 } from '../../repositories/postgres/index.js'
 import {
     CreateTransactionUseCase,
-    GetTransactionsByUserIdUseCase,
+    GetTransactionByUserIdUseCase,
     UpdateTransactionUseCase,
     DeleteTransactionUseCase,
 } from '../../use-cases/index.js'
+import { IdGeneratorAdapter } from '../../adapters/index.js'
 
 export const makeCreateTransactionController = () => {
     const createTransactionRepository =
         new PostgresCreateTransactionRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
+    const idGeneratorAdapter = new IdGeneratorAdapter()
     const createTransactionUseCase = new CreateTransactionUseCase(
         createTransactionRepository,
         getUserByIdRepository,
+        idGeneratorAdapter,
     )
     const createTransactionController = new CreateTransactionController(
         createTransactionUseCase,
@@ -35,13 +38,13 @@ export const makeGetTransactionsByUserIdController = () => {
     const getTransactionsByUserIdRepository =
         new PostgresetTransactionsByUserIdRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
-    const getTransactionsByUserIdUseCase = new GetTransactionsByUserIdUseCase(
+    const getTransactionsByUserIdUseCase = new GetTransactionByUserIdUseCase(
         getTransactionsByUserIdRepository,
         getUserByIdRepository,
     )
-    const getTransactionsByUserIdController =
-        new GetTransactionsByUserIdController(getTransactionsByUserIdUseCase)
-    return getTransactionsByUserIdController
+    const getTransactionByUserIdController =
+        new GetTransactionByUserIdController(getTransactionsByUserIdUseCase)
+    return getTransactionByUserIdController
 }
 export const makeUpdateTransactionController = () => {
     const updateTransactionRepository =
