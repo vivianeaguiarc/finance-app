@@ -1,21 +1,11 @@
 import { faker } from '@faker-js/faker'
 import { DeleteTransactionUseCase } from './delete-transaction.js'
+import { transaction } from '../../tests/fixtures/index.js'
 
 describe('DeleteTransactionUseCase', () => {
-    const transaction = {
-        id: faker.string.uuid(),
-        user_id: faker.string.uuid(),
-        name: faker.commerce.productName(),
-        date: faker.date.anytime().toISOString(),
-        type: 'EXPENSE',
-        amount: Number(faker.finance.amount()),
-    }
     class DeleteTransactionRepositoryStub {
-        async execute(transactionId) {
-            return {
-                ...transaction,
-                id: transactionId,
-            }
+        async execute() {
+            return transaction
         }
     }
     const makeSut = () => {
@@ -30,10 +20,7 @@ describe('DeleteTransactionUseCase', () => {
     it('should delete transaction successfully', async () => {
         const { sut } = makeSut()
         const result = await sut.execute(transaction.id)
-        expect(result).toEqual({
-            ...transaction,
-            id: transaction.id,
-        })
+        expect(result).toEqual(transaction)
     })
     it('should call DeleteTransactionRepository with correct id', async () => {
         const { sut, deleteTransactionRepository } = makeSut()

@@ -1,41 +1,28 @@
-import { faker } from '@faker-js/faker'
 import { CreateTransactionUseCase } from './create-transaction.js'
 import { UserNotFoundError } from '../../errors/user.js'
+import { transaction, user } from '../../tests/fixtures/index.js'
 
 describe('CreateTransactionUseCase', () => {
     const createTransactionParams = {
-        id: faker.string.uuid(),
-        user_id: faker.string.uuid(),
-        name: faker.commerce.productName(),
-        date: faker.date.anytime().toISOString(),
-        type: 'EXPENSE',
-        amount: Number(faker.finance.amount()),
-    }
-
-    const user = {
-        id: faker.string.uuid(),
-        first_name: faker.person.firstName(),
-        last_name: faker.person.lastName(),
-        email: faker.internet.email(),
-        password: faker.internet.password({ length: 7 }),
+        ...transaction,
+        id: undefined,
     }
 
     class CreateTransactionRepositoryStub {
-        async execute(transaction) {
+        async execute() {
             return transaction
         }
     }
 
     class IdGeneratorAdapterStub {
         execute() {
-            // ✅ use case chama execute()
             return 'random-id'
         }
     }
 
     class GetUserByIdRepositoryStub {
-        async execute(userId) {
-            return { ...user, id: userId }
+        async execute() {
+            return user
         }
     }
 
@@ -63,7 +50,7 @@ describe('CreateTransactionUseCase', () => {
     it('should create transaction successfully', async () => {
         const { sut, createTransactionParams } = makeSut()
         const result = await sut.execute(createTransactionParams)
-        expect(result).toEqual({ ...createTransactionParams, id: 'random-id' })
+        expect(result).toEqual(transaction)
     })
     it('should call GetUserByIdRepository with correct user id', async () => {
         const { sut, getUserByIdRepository, createTransactionParams } =
