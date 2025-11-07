@@ -5,10 +5,11 @@ import { transaction, user } from '../../tests/fixtures/index.js'
 describe('CreateTransactionUseCase', () => {
     const createTransactionParams = {
         ...transaction,
+        id: undefined,
     }
 
     class CreateTransactionRepositoryStub {
-        async execute(transaction) {
+        async execute() {
             return transaction
         }
     }
@@ -49,7 +50,7 @@ describe('CreateTransactionUseCase', () => {
     it('should create transaction successfully', async () => {
         const { sut, createTransactionParams } = makeSut()
         const result = await sut.execute(createTransactionParams)
-        expect(result).toEqual({ ...createTransactionParams, id: 'random-id' })
+        expect(result).toEqual(transaction)
     })
     it('should call GetUserByIdRepository with correct user id', async () => {
         const { sut, getUserByIdRepository, createTransactionParams } =

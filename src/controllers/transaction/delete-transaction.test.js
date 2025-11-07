@@ -1,3 +1,4 @@
+import { transaction } from '../../tests/fixtures/index.js'
 import { DeleteTransactionController } from './delete-transaction.js'
 
 import { faker } from '@faker-js/faker'
@@ -5,14 +6,7 @@ import { faker } from '@faker-js/faker'
 describe('Delete Transaction Controller', () => {
     class DeleteTransactionUseCasesStub {
         async execute() {
-            return {
-                user_id: faker.string.uuid(),
-                id: faker.string.uuid(),
-                name: faker.commerce.productName(),
-                date: faker.date.anytime().toDateString(),
-                type: 'EXPENSE',
-                amount: Number(faker.finance.amount()),
-            }
+            return transaction
         }
     }
     const makeSut = () => {

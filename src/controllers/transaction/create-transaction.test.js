@@ -1,20 +1,10 @@
-import { faker } from '@faker-js/faker'
 import { CreateTransactionController } from './create-transaction.js'
+import { transaction } from '../../tests/fixtures/index.js'
 
 describe('Create TransactionController', () => {
-    // mock do retorno da use case
-    const transaction = {
-        id: faker.string.uuid(),
-        user_id: faker.string.uuid(),
-        name: faker.string.alphanumeric({ length: 10 }),
-        date: faker.date.anytime().toISOString(),
-        amount: Number(faker.finance.amount()),
-        type: faker.helpers.arrayElement(['EARNING', 'EXPENSE', 'INVESTMENT']),
-    }
-
     class CreateTransactionUseCaseStub {
         async execute() {
-            return transaction // agora existe
+            return transaction
         }
     }
 
@@ -27,15 +17,8 @@ describe('Create TransactionController', () => {
     // request base
     const baseHttpRequest = {
         body: {
-            user_id: faker.string.uuid(),
-            name: faker.string.alphanumeric({ length: 10 }),
-            date: faker.date.anytime().toISOString(),
-            amount: Number(faker.finance.amount()),
-            type: faker.helpers.arrayElement([
-                'EARNING',
-                'EXPENSE',
-                'INVESTMENT',
-            ]),
+            ...transaction,
+            id: undefined,
         },
     }
 
