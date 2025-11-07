@@ -47,4 +47,20 @@ describe('Update Transaction Use Case', () => {
         await sut.execute(id, updateData)
         expect(updateSpy).toHaveBeenCalledWith(id, updateData)
     })
+    it('should throw if UpdateTransactionRepository throws', async () => {
+        const { sut, updateTransactionRepositoryStub } = makeSut()
+        jest.spyOn(
+            updateTransactionRepositoryStub,
+            'execute',
+        ).mockImplementationOnce(() => {
+            throw new Error('Repository error')
+        })
+        const id = faker.string.uuid()
+        const updateData = {
+            amount: Number(faker.finance.amount()),
+        }
+        await expect(sut.execute(id, updateData)).rejects.toThrow(
+            'Repository error',
+        )
+    })
 })
