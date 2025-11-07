@@ -5,6 +5,7 @@ export default {
     setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
     coverageDirectory: 'coverage',
     coverageProvider: 'v8',
+    globalSetup: '<rootDir>/jest.global-setup.mjs',
     testMatch: ['**/?(*.)+(spec|test).js'],
     collectCoverageFrom: [
         'src/**/*.js'],
@@ -15,14 +16,4 @@ export default {
         'src/controllers/helpers/transaction.js',
         'src/controllers/helpers/user.js',
     ],
-
-    // // Opcional: se quiser definir metas de cobertura globais
-    // coverageThreshold: {
-    //     global: {
-    //         statements: 85,
-    //         branches: 80,
-    //         functions: 85,
-    //         lines: 85,
-    //     },
-    // },
 }
