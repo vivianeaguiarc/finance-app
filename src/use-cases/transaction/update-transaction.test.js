@@ -37,4 +37,14 @@ describe('Update Transaction Use Case', () => {
             ...transaction,
         })
     })
+    it('should call UpdateTransactionRepository with correct values', async () => {
+        const { sut, updateTransactionRepositoryStub } = makeSut()
+        const updateSpy = jest.spyOn(updateTransactionRepositoryStub, 'execute')
+        const id = faker.string.uuid()
+        const updateData = {
+            amount: Number(faker.finance.amount()),
+        }
+        await sut.execute(id, updateData)
+        expect(updateSpy).toHaveBeenCalledWith(id, updateData)
+    })
 })
