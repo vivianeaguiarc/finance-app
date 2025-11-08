@@ -1,4 +1,5 @@
 import { prisma } from '../../../../prisma/prisma.js'
+import { TransactionType } from '@prisma/client'
 import { PostgresUpdateTransactionRepository } from './update-transaction.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -21,13 +22,11 @@ describe('PostgresUpdateTransactionRepository', () => {
 
         // 2) normaliza a data (se seu campo é @db.Date)
         const txDate = dayjs.utc(transaction.date).startOf('day').toDate()
-
-        // 3) cria a transação base apontando para o usuário criado
-        //    ATENÇÃO: ajuste "user_id" -> "userId" se seu model Prisma usa camelCase
+        // 3) cria a transação base no DB
         const baseTx = await prisma.transaction.create({
             data: {
                 ...transaction,
-                user_id: createdUser.id, // ou userId: createdUser.id
+                user_id: createdUser.id,
                 date: txDate,
             },
         })
@@ -36,8 +35,7 @@ describe('PostgresUpdateTransactionRepository', () => {
 
         // 4) prepara os params com o id EXISTENTE
         const updateParams = {
-            // use o nome do campo exatamente como está no model Prisma:
-            user_id: createdUser.id, // ou userId: createdUser.id
+            user_id: createdUser.id,
             name: faker.commerce.productName(),
             type: 'EXPENSE',
             amount: Number(faker.finance.amount()),
@@ -56,5 +54,37 @@ describe('PostgresUpdateTransactionRepository', () => {
         expect(dayjs.utc(result.date).format('YYYY-MM-DD')).toBe(
             dayjs.utc(updateParams.date).format('YYYY-MM-DD'),
         )
+    })
+    it('should call prisma with correct values', async () => {
+        const createdUser = await prisma.user.create({ data: userFixture })
+        const txDate = dayjs.utc(transaction.date).startOf('day').toDate()
+        const baseTx = await prisma.transaction.create({
+            data: {
+                ...transaction,
+                user_id: createdUser.id,
+                date: txDate,
+            },
+        })
+
+        const sut = new PostgresUpdateTransactionRepository()
+
+        const updateParams = {
+            user_id: createdUser.id, // ou userId: ... se o model usa camelCase
+            name: faker.commerce.productName(),
+            type: TransactionType.EARNING, // ✅ enum válido
+            amount: Number(faker.finance.amount()),
+            date: txDate,
+        }
+
+        const prismaSpy = jest
+            .spyOn(prisma.transaction, 'update')
+            .mockResolvedValueOnce({ ...baseTx, ...updateParams })
+
+        await sut.execute(baseTx.id, updateParams)
+
+        expect(prismaSpy).toHaveBeenCalledWith({
+            where: { id: baseTx.id },
+            data: updateParams,
+        })
     })
 })
