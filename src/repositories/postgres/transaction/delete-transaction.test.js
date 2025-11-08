@@ -36,4 +36,19 @@ describe('PostgresDeleteTransactionRepository', () => {
             dayjs.utc(result.date).isSame(dayjs.utc(transaction.date), 'day'),
         ).toBe(true)
     })
+    it('should return null if transaction does not exist', async () => {
+        const sut = new PostgresDeleteTransactionRepository()
+        const result = await sut.execute('non-existing-id')
+
+        expect(result).toBeNull()
+    })
+    it('should call prisma with correct values', async () => {
+        const prismaSpy = jest.spyOn(prisma.transaction, 'delete')
+        const sut = new PostgresDeleteTransactionRepository()
+        await sut.execute(transaction.id)
+
+        expect(prismaSpy).toHaveBeenCalledWith({
+            where: { id: transaction.id },
+        })
+    })
 })
