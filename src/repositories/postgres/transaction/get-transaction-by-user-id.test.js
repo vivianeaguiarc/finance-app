@@ -38,4 +38,13 @@ describe('PostgresDeleteTransactionRepository', () => {
             where: { id: transaction.id },
         })
     })
+    it('should return null if prisma throws', async () => {
+        const sut = new PostgresDeleteTransactionRepository()
+        jest.spyOn(prisma.transaction, 'delete').mockRejectedValueOnce(
+            new Error('Prisma error'),
+        )
+
+        const result = await sut.execute(transaction.id)
+        expect(result).toBeNull()
+    })
 })

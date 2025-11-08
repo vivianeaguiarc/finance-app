@@ -7,7 +7,7 @@ import {
 import {
     PostgresCreateTransactionRepository,
     PostgresGetUserByIdRepository,
-    PostgresetTransactionsByUserIdRepository,
+    PostgresGetTransactionsByUserIdRepository,
     PostgresUpdateTransactionRepository,
     PostgresDeleteTransactionRepository,
 } from '../../repositories/postgres/index.js'
@@ -36,7 +36,7 @@ export const makeCreateTransactionController = () => {
 }
 export const makeGetTransactionsByUserIdController = () => {
     const getTransactionsByUserIdRepository =
-        new PostgresetTransactionsByUserIdRepository()
+        new PostgresGetTransactionsByUserIdRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
     const getTransactionsByUserIdUseCase = new GetTransactionByUserIdUseCase(
         getTransactionsByUserIdRepository,
