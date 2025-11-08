@@ -31,4 +31,14 @@ describe('DeleteUserRepository', () => {
 
         expect(result).toBeNull()
     })
+    it('should return 500 if prisma throws', async () => {
+        const sut = new PostgresDeleteUserRepository()
+        jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
+            new Error('boom'),
+        )
+
+        const result = await sut.execute(user.id)
+
+        expect(result).toBeNull()
+    })
 })
