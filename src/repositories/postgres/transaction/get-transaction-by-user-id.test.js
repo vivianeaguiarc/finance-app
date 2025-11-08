@@ -29,4 +29,13 @@ describe('PostgresDeleteTransactionRepository', () => {
             dayjs.utc(result.date).isSame(dayjs.utc(transaction.date), 'day'),
         ).toBe(true)
     })
+    it('should call Prisma with correct params', async () => {
+        const prismaSpy = jest.spyOn(prisma.transaction, 'delete')
+        const sut = new PostgresDeleteTransactionRepository()
+        await sut.execute(transaction.id)
+
+        expect(prismaSpy).toHaveBeenCalledWith({
+            where: { id: transaction.id },
+        })
+    })
 })
