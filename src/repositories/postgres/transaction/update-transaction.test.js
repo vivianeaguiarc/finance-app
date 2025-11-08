@@ -87,4 +87,25 @@ describe('PostgresUpdateTransactionRepository', () => {
             data: updateParams,
         })
     })
+
+    it('should throw if prisma throws', async () => {
+        const sut = new PostgresUpdateTransactionRepository()
+
+        const prismaSpy = jest
+            .spyOn(prisma.transaction, 'update')
+            .mockRejectedValueOnce(new Error('Prisma error'))
+
+        await expect(
+            sut.execute(faker.string.uuid(), {
+                // ✅ corrigido
+                user_id: faker.string.uuid(), // ✅ corrigido
+                name: faker.commerce.productName(),
+                type: TransactionType.EARNING,
+                amount: Number(faker.finance.amount()),
+                date: new Date(),
+            }),
+        ).rejects.toThrow('Prisma error')
+
+        expect(prismaSpy).toHaveBeenCalled()
+    })
 })
