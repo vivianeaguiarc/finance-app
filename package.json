@@ -4,13 +4,13 @@
   "description": "Aplicação de gestão de finanças ",
   "main": "index.js",
   "type": "module",
- "scripts": {
-  "test": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --watch --passWithNoTests --silent",
-  "coverage": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
-  "postinstall": "npx husky install && npx prisma generate",
-  "migrations": "node src/db/postgres/migrations/exec.js",
-  "dev": "node --watch index.js"
-},
+  "scripts": {
+    "test": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --watch --passWithNoTests --silent --runInBand",
+    "coverage": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
+    "postinstall": "npx husky install && npx prisma generate",
+    "migrations": "node src/db/postgres/migrations/exec.js",
+    "dev": "node --watch index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/vivianeaguiarc/finance-app.git"
@@ -43,6 +43,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcrypt": "^6.0.0",
+    "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "pg": "^8.16.3",
