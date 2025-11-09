@@ -14,7 +14,7 @@ export class PostgresDeleteTransactionRepository {
             // AQUI O CATCH ESTÁ CORRETO
             if (error instanceof PrismaClientKnownRequestError) {
                 if (error.code === 'P2025') {
-                    throw new TransactionNotFoundError()
+                    throw new TransactionNotFoundError(transactionId)
                 }
             }
             throw error
