@@ -6,6 +6,7 @@ import {
     makeUpdateUserController,
     makeGetUserBalanceController,
 } from '../factories/controllers/user.js'
+import { makeGetTransactionBalanceController } from '../factories/controllers/transaction.js'
 
 export const usersRouter = Router()
 
@@ -19,6 +20,12 @@ usersRouter.get('/:userId/balance', async (request, response) => {
     const { statusCode, body } = await getUserBalanceController.execute(request)
     response.status(statusCode).send(body)
 })
+usersRouter.get('/api/users/:userId/balance', async (req, res) => {
+    const controller = makeGetTransactionBalanceController()
+    const { statusCode, body } = await controller.execute(req)
+    res.status(statusCode).send(body)
+})
+
 usersRouter.post('/', async (request, response) => {
     const createUserController = makeCreateUserController()
     const { statusCode, body } = await createUserController.execute(request)

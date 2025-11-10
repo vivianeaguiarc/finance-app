@@ -21,7 +21,7 @@ model User {
 // Modelando a Tabela de Transações no Prisma
 
 model Transaction {
-  id      String          @id @default(uuid())
+  id      String          @id @default(uuid()) 
   user_id String
   user    User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
   name    String          @db.VarChar(50)
@@ -37,3 +37,4 @@ enum TransactionType {
   EXPENSE
   INVESTMENT
 }
+

@@ -5,3 +5,5 @@ async function init () {
     execSync('npx dotenv -e .env.test -- prisma db push') 
 }
 export default init;
+
+
