@@ -1,0 +1,60 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Finance App API",
+        "description": "API for Finance Application that allows users to manage their finances."
+    },
+    "paths": {
+        "/api/users": {
+            "post": {
+                "summary": "Create a new user",
+                "tags": ["Users"],
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "user",
+                        "description": "User object that needs to be added to the Finance App",
+                        "required": true,
+                        "schema": { "$ref": "#/definitions/User" }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User created",
+                        "schema": { "$ref": "#/definitions/User" }
+                    },
+                    "400": { "description": "Invalid params" },
+                    "500": { "description": "Server error" }
+                }
+            }
+        }
+    },
+    "definitions": {
+         "CreateUserParams": {
+            "type": "object",
+            "properties": {
+                "first_name": { "type": "string", "example": "John" },
+                "last_name": { "type": "string", "example": "Doe" },
+                "email": { "type": "string", "example": "john@doe.com" },
+                "password": { "type": "string", "example": "password123" }
+            },
+            "required": ["first_name", "last_name", "email", "password"]
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "first_name": { "type": "string", "example": "John" },
+                "last_name": { "type": "string", "example": "Doe" },
+                "email": { "type": "string", "example": "john@doe.com" },
+                "password": { "type": "string", "example": "password123" }
+            },
+            "required": ["first_name", "last_name", "email", "password"]
+        }
+    }
+}
