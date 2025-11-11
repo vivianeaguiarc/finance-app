@@ -57,6 +57,27 @@
                     "404": { "description": "User not found" },
                     "500": { "description": "Server error" }
                 }
+            },
+            "delete": {
+                "summary": "Delete user by ID",
+                "description": "Delete a specific user by their unique ID.",
+                "tags": ["Users"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "required": true,
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID of the user to delete (UUID format)",
+                        "schema": { "$ref": "#/definitions/User" }
+                    }
+                ],
+                "responses": {
+                    "204": { "description": "User deleted successfully" },
+                    "404": { "description": "User not found" },
+                    "500": { "description": "Server error" }
+                }
             }
         }
     },
