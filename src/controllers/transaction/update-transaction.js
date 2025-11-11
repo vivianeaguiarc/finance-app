@@ -7,6 +7,8 @@ import {
     ok,
     serverError,
 } from '../helpers/index.js'
+import { TransactionNotFoundError } from '../../errors/transaction.js'
+import { transactionNotFoundError } from '../errors/transaction-not-found-error.js'
 
 export class UpdateTransactionController {
     constructor(updateTransactionUseCase) {
@@ -32,6 +34,10 @@ export class UpdateTransactionController {
                     message: error.issues[0].message,
                 })
             }
+            if (error instanceof TransactionNotFoundError) {
+                return transactionNotFoundError()
+            }
+
             console.error(error)
             return serverError()
         }
