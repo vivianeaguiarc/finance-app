@@ -33,4 +33,30 @@ describe(`Transaction Routes E2E Tests`, () => {
         expect(response.status).toBe(200)
         expect(response.body).toEqual([createdTransaction])
     })
+    it('PATCH /api/transactions/:transactionId should return 200 when transaction is updated', async () => {
+        // cria o usuário
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({ ...user, id: undefined })
+        // cria a transação
+        const { body: createdTransaction } = await request(app)
+            .post('/api/transactions')
+            .send({ ...transaction, user_id: createdUser.id, id: undefined })
+
+        const updateTransactionParams = {
+            amount: 5000,
+            description: 'Updated description',
+        }
+
+        // atualiza
+        const response = await request(app)
+            .patch(`/api/transactions/${createdTransaction.id}`)
+            .send(updateTransactionParams)
+
+        expect(response.status).toBe(200)
+
+        const updated = response.body
+        expect(updated.amount).toBe(String(updateTransactionParams.amount))
+        expect(updated.description).toBe(updateTransactionParams.description)
+    })
 })
