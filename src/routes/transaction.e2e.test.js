@@ -1,6 +1,7 @@
 import request from 'supertest'
 import { app } from '../app.js'
 import { transaction, user } from '../tests/fixtures/index.js'
+import { faker } from '@faker-js/faker'
 
 describe(`Transaction Routes E2E Tests`, () => {
     it('POST /api/transactions should return 201 when transaction is created', async () => {
@@ -44,8 +45,10 @@ describe(`Transaction Routes E2E Tests`, () => {
             .send({ ...transaction, user_id: createdUser.id, id: undefined })
 
         const updateTransactionParams = {
-            amount: 5000,
-            description: 'Updated description',
+            name: faker.commerce.productName(),
+            amount: 2500,
+            date: new Date().toISOString(),
+            type: 'EARNING',
         }
 
         // atualiza
@@ -59,4 +62,26 @@ describe(`Transaction Routes E2E Tests`, () => {
         expect(updated.amount).toBe(String(updateTransactionParams.amount))
         expect(updated.description).toBe(updateTransactionParams.description)
     })
+    it('DELETE /api/transactions/:transactionId should return 200 when transaction is deleted', async () => {
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({ ...user, id: undefined })
+        // cria a transação
+        const { body: createdTransaction } = await request(app)
+            .post('/api/transactions')
+            .send({ ...transaction, user_id: createdUser.id, id: undefined })
+        const response = await request(app).delete(
+            `/api/transactions/${createdTransaction.id}`,
+        )
+        expect(response.status).toBe(200)
+    })
+    // it('PATCH /api/transactions/:transactionId should return 404 when transaction does not exist', async () => {
+    //     const response = await request(app)
+    //         .patch(`/api/transactions/non-existing-id`)
+    //         .send({
+    //             amount: 100,
+    //             type: TransactionType.INVESTMENT
+    //         })
+    //         expect(response.status).toBe(404)
+    // })
 })
