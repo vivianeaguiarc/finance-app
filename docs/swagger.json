@@ -202,6 +202,47 @@
                     }
                 }
             }
+        },
+        "/api/transactions": {
+            "post": {
+                "summary": "Create a new transaction",
+                "description": "Endpoint to create a new financial transaction for a user.",
+                "tags": ["Transactions"],
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Transaction payload",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateTransactionParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Transaction created successfully",
+                        "schema": { "$ref": "#/definitions/Transactions" }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/InvalidParamsResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/UserNotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": { "$ref": "#/definitions/ErrorResponse" }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -260,6 +301,58 @@
                 "error": { "type": "string", "example": "User not found" }
             },
             "required": ["error"]
+        },
+        "Transactions": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "txn_1234567890"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "amount": {
+                    "type": "string",
+                    "example": "250.75"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "EARNING",
+                    "description": "EARNING, EXPENSE, INVESTMENT"
+                },
+                "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-10-01T12:34:56Z"
+                }
+            },
+            "required": ["id", "user_id", "amount", "type", "date"]
+        },
+        "CreateTransactionParams": {
+            "type": "object",
+            "properties": {
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "amount": {
+                    "type": "string",
+                    "example": "250.75"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "EARNING",
+                    "description": "EARNING, EXPENSE, INVESTMENT"
+                },
+                "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-10-01T12:34:56Z"
+                }
+            },
+            "required": ["user_id", "amount", "type"]
         },
         "InvalidParamsResponse": {
             "type": "object",
