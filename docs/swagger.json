@@ -243,7 +243,40 @@
                     }
                 }
             }
+        },
+        "api/transactions": {
+            "get": {
+                "summary": "Get all transactions",
+                "description": "Retrieve all financial transactions.",
+                "tags": ["Transactions"],
+                "responses": {
+                    "200": {
+                        "description": "Transactions retrieved successfully",
+                        "schema": {
+                            "type": "array",
+                            "items": { "$ref": "#/definitions/Transactions" }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/InvalidParamsResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/UserNotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": { "$ref": "#/definitions/ErrorResponse" }
+                    }
+                }
+            }
         }
+
     },
     "definitions": {
         "CreateUserParams": {
