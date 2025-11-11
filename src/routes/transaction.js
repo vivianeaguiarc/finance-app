@@ -24,9 +24,8 @@ transactionsRouter.post('/', async (request, response) => {
     response.status(statusCode).send(body)
 })
 transactionsRouter.patch('/:transactionId', async (request, response) => {
-    const updateTransactionController = makeUpdateTransactionController()
-    const { statusCode, body } =
-        await updateTransactionController.execute(request)
+    const controller = makeUpdateTransactionController()
+    const { statusCode, body } = await controller.execute(request)
     response.status(statusCode).send(body)
 })
 transactionsRouter.delete('/:transactionId', async (request, response) => {
