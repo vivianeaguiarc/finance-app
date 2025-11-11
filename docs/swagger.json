@@ -1,3 +1,4 @@
+
 {
     "swagger": "2.0",
     "info": {
@@ -15,13 +16,11 @@
                 "consumes": ["application/json"],
                 "parameters": [
                     {
-                        "in": "path",
-                        "name": "userId",
+                        "in": "body",
+                        "name": "body",
+                        "description": "User payload",
                         "required": true,
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "ID of the user to fetch (UUID format)",
-                        "default": "123e4567-e89b-12d3-a456-426614174000"
+                        "schema": { "$ref": "#/definitions/CreateUserParams" }
                     }
                 ],
                 "responses": {
@@ -29,8 +28,23 @@
                         "description": "User created successfully",
                         "schema": { "$ref": "#/definitions/User" }
                     },
-                    "400": { "description": "Invalid parameters" },
-                    "500": { "description": "Server error" }
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Invalid parameters"
+                                }
+                            },
+                            "$ref": "#/definitions/UserNotFoundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": { "$ref": "#/definitions/ErrorResponse" }
+                    }
                 }
             }
         },
@@ -54,8 +68,14 @@
                         "description": "User found",
                         "schema": { "$ref": "#/definitions/User" }
                     },
-                    "404": { "description": "User not found" },
-                    "500": { "description": "Server error" }
+                    "404": {
+                        "description": "User not found",
+                        "schema": { "$ref": "#/definitions/UserNotFoundResponse" }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": { "$ref": "#/definitions/ErrorResponse" }
+                    }
                 }
             },
             "delete": {
@@ -69,14 +89,32 @@
                         "required": true,
                         "type": "string",
                         "format": "uuid",
-                        "description": "ID of the user to delete (UUID format)",
-                        "schema": { "$ref": "#/definitions/User" }
+                        "description": "ID of the user to delete (UUID format)"
                     }
                 ],
                 "responses": {
-                    "204": { "description": "User deleted successfully" },
-                    "404": { "description": "User not found" },
-                    "500": { "description": "Server error" }
+                    "200": {
+                        "description": "User deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/DeleteUserResponse"
+                        },
+                        "examples": {
+                            "application/json": {
+                                "message": "User deleted successfully",
+                                "deleted": {
+                                    "id": "123e4567-e89b-12d3-a456-426614174000"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": { "$ref": "#/definitions/UserNotFoundResponse" }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "schema": { "$ref": "#/definitions/ErrorResponse" }
+                    }
                 }
             }
         }
@@ -105,6 +143,37 @@
                 "password": { "type": "string", "example": "password123" }
             },
             "required": ["first_name", "last_name", "email", "password"]
+        },
+        "UserNotFoundResposnse": {
+            "type": "object",
+            "properties": {
+                "error": { "type": "string", "example": "User not found" }
+            },
+            "required": ["error"]
+        },
+        "DeleteUserResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "User deleted successfully"
+                },
+                "deleted": {
+                    "type": "object",
+                    "properties": {
+                        "id": { "type": "string", "format": "uuid" }
+                    },
+                    "required": ["id"]
+                }
+            },
+            "required": ["message", "deleted"]
+        },
+        "ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": { "type": "string", "example": "User not found" }
+            },
+            "required": ["error"]
         }
     }
 }
