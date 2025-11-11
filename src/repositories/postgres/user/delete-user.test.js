@@ -102,7 +102,7 @@ describe('DeleteUserRepository', () => {
         await expect(sut.execute(user.id)).rejects.toThrow(mockError)
     })
 
-    it('should throw generic if prisma throws generic error', async () => {
+    it('should throw UserNotFoundError generic if prisma does not find to delete', async () => {
         const sut = new PostgresDeleteUserRepository()
         const mockError = new Error()
         jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(mockError)

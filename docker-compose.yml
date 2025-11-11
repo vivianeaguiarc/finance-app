@@ -1,18 +1,28 @@
-version: '3.8'
-services:
-  postgres:
-    image: postgres:16
-    container_name: financeapp-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: finance_app
-    ports:
-      - "5432:5432"       # host:container
-    volumes:
-      - ./.postgres-data:/var/lib/postgresql/data
+# version: '3.8'
+# services:
+#   postgres:
+#     image: postgres:16
+#     container_name: financeapp-postgres
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: password
+#       POSTGRES_DB: finance_app
+#     ports:
+#       - "5432:5432"       # host:container
+#     volumes:
+#       - ./.postgres-data:/var/lib/postgresql/data
 
-  postgres-test:
+#   postgres-test:
+#     image: postgres:16
+#     container_name: financeapp-postgres-test
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: password
+#       POSTGRES_DB: finance_app
+#     ports:
+#       - "5434:5432"       # host:container
+services:
+  postgres_test:
     image: postgres:16
     container_name: financeapp-postgres-test
     environment:
@@ -20,4 +30,14 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: finance_app
     ports:
-      - "5434:5432"       # host:container
+      - "5434:5432"
+    volumes:
+      - financeapp-postgres-test:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d finance_app"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  financeapp-postgres-test:

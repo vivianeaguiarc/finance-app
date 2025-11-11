@@ -17,3 +17,4 @@ export default {
         'src/controllers/helpers/user.js',
     ],
 }
+

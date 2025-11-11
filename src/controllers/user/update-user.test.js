@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker'
 import { UpdateUserController } from './update-user.js'
 import { EmailAlreadyInUseError } from '../../errors/user.js'
 import { user } from '../../tests/fixtures/user.js'
+import { UserNotFoundError } from '../../errors/index.js'
 
 describe('UpdateUserController', () => {
     class UpdateUserUseCaseStub {
@@ -107,5 +108,21 @@ describe('UpdateUserController', () => {
             httpRequest.params.userId,
             httpRequest.body,
         )
+    })
+    it('should throw UserNotFoundError generic if prisma does not find to update', async () => {
+        const { sut, updateUserUseCase } = makeSut()
+        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
+            new UserNotFoundError(httpRequest.params.userId),
+        )
+        const result = await sut.execute(httpRequest)
+        expect(result.statusCode).toBe(404)
+    })
+    it('should return 404 if UpdateUserUseCase throws UserNotFoundError', async () => {
+        const { sut, updateUserUseCase } = makeSut()
+        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
+            new UserNotFoundError(httpRequest.params.userId),
+        )
+        const result = await sut.execute(httpRequest)
+        expect(result.statusCode).toBe(404)
     })
 })

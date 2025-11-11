@@ -10,6 +10,7 @@ import {
     user as userFixture,
 } from '../../../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
+import { TransactionNotFoundError } from '../../../errors/transaction.js'
 
 describe('PostgresUpdateTransactionRepository', () => {
     afterAll(async () => {
@@ -107,5 +108,16 @@ describe('PostgresUpdateTransactionRepository', () => {
         ).rejects.toThrow('Prisma error')
 
         expect(prismaSpy).toHaveBeenCalled()
+    })
+    it('should throw TransactionNotFoundError if prisma does not record to update', async () => {
+        const sut = new PostgresUpdateTransactionRepository()
+        jest.spyOn(prisma.transaction, 'update').mockRejectedValueOnce({
+            code: 'P2025',
+        })
+
+        const promise = sut.execute(transaction.id, transaction)
+        await expect(promise).rejects.toThrow(
+            new TransactionNotFoundError(transaction.id),
+        )
     })
 })
