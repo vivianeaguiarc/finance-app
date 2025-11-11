@@ -1,14 +1,6 @@
-import { ZodError } from 'zod'
 import { updateTransactionSchema } from '../../schemas/transaction.js'
-import {
-    badRequest,
-    checkIfIdIsValid,
-    invalidIdResponse,
-    ok,
-    serverError,
-} from '../helpers/index.js'
-import { TransactionNotFoundError } from '../../errors/transaction.js'
-import { transactionNotFoundError } from '../errors/transaction-not-found-error.js'
+import { checkIfIdIsValid, invalidIdResponse, ok } from '../helpers/index.js'
+import { TransactionNotFoundError } from '../../errors/index.js'
 
 export class UpdateTransactionController {
     constructor(updateTransactionUseCase) {
@@ -29,17 +21,28 @@ export class UpdateTransactionController {
             )
             return ok(transaction)
         } catch (error) {
-            if (error instanceof ZodError) {
-                return badRequest({
-                    message: error.issues[0].message,
-                })
+            if (error?.issues) {
+                return {
+                    statusCode: 400,
+                    body: { error: 'ValidationError', details: error.issues },
+                }
             }
+
             if (error instanceof TransactionNotFoundError) {
-                return transactionNotFoundError()
+                return {
+                    statusCode: 404,
+                    body: {
+                        error: 'TransactionNotFound',
+                        message: error.message,
+                    },
+                }
             }
 
             console.error(error)
-            return serverError()
+            return {
+                statusCode: 500,
+                body: { error: 'InternalServerError' },
+            }
         }
     }
 }
