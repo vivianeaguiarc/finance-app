@@ -1,3 +1,123 @@
+# name: CI
+
+# on:
+#   push:
+#     branches: ['**']
+#   pull_request:
+#     branches: ['**']
+
+# jobs:
+#   check:
+#     runs-on: ubuntu-latest
+
+#     # Variáveis válidas para todo o job (inclui Prisma e testes)
+#     env:
+#       DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
+#       NODE_ENV: test
+#       CI: 'true'
+
+#     services:
+#       postgres:
+#         image: postgres:16
+#         env:
+#           POSTGRES_USER: postgres
+#           POSTGRES_PASSWORD: password
+#           POSTGRES_DB: finance_app_test
+#         ports:
+#           - '5432:5432'
+#         options: >-
+#           --health-cmd="pg_isready -U postgres"
+#           --health-interval=10s
+#           --health-timeout=5s
+#           --health-retries=10
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#           cache: 'npm'
+
+#       - name: Install deps
+#         run: npm ci --no-audit --no-fund
+
+#       - name: Lint (ESLint)
+#         run: npm run eslint:check
+
+#       - name: Prettier check
+#         run: npm run prettier:check
+
+#       - name: Wait for DB
+#         run: |
+#           for i in {1..60}; do
+#             pg_isready -h localhost -p 5432 -U postgres && exit 0
+#             sleep 1
+#           done
+#           exit 1
+
+#       - name: Prisma generate
+#         run: npx prisma generate
+
+#       # ✅ Se houver migrations versionadas, aplica; senão, faz db push
+#       - name: Apply Prisma schema
+#         run: |
+#           set -e
+#           if [ -d prisma/migrations ] && [ "$(ls -A prisma/migrations)" ]; then
+#             echo "Found migrations -> prisma migrate deploy"
+#             npx prisma migrate deploy
+#           else
+#             echo "No migrations -> prisma db push"
+#             npx prisma db push --accept-data-loss
+#           fi
+
+#       - name: Tests (CI)
+#         run: npm run test:ci
+
+#   # 🧩 Job separado para executar migrations em produção/staging (opcional)
+#   # migrate:
+#   #   runs-on: ubuntu-latest
+#   #   needs: check
+#   #   steps:
+#   #     - name: Checkout code
+#   #       uses: actions/checkout@v4
+
+#   #     - name: Setup Node.js
+#   #       uses: actions/setup-node@v4
+#   #       with:
+#   #         node-version: '20'
+#   #         cache: 'npm'
+     
+#   #     - name: Install dependencies
+#   #       run: npm ci --no-audit --no-fund
+
+#   migrate: 
+#     runs-on: ubuntu-latest
+#     needs: check
+#     environment: production
+#     steps:
+#       - name: Checkout code 
+#         uses: actions/checkout@v4
+      
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#           cache: 'npm'
+      
+#       - name: Install dependencies
+#         run: npm ci --no-audit --no-fund
+      
+#       - name: Make envfile
+#         uses: SpicyPizza/create-envfile-action@v2
+#         with:
+#           envkey_DATABASE_URL: $ {{ secrets.DATABASE_URL }}
+      
+#       - name: Run Migrations
+#         run: npx prisma migrate deploy
+
 name: CI
 
 on:
@@ -9,8 +129,6 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-
-    # Variáveis válidas para todo o job (inclui Prisma e testes)
     env:
       DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
       NODE_ENV: test
@@ -61,7 +179,6 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
-      # ✅ Se houver migrations versionadas, aplica; senão, faz db push
       - name: Apply Prisma schema
         run: |
           set -e
@@ -76,44 +193,33 @@ jobs:
       - name: Tests (CI)
         run: npm run test:ci
 
-  # 🧩 Job separado para executar migrations em produção/staging (opcional)
-  # migrate:
-  #   runs-on: ubuntu-latest
-  #   needs: check
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
-     
-  #     - name: Install dependencies
-  #       run: npm ci --no-audit --no-fund
-
-  migrate: 
+  migrate:
     runs-on: ubuntu-latest
     needs: check
-    environment: production
+    # opcional: só roda migrations quando o commit é na main
+    if: github.ref == 'refs/heads/main'
     steps:
-      - name: Checkout code 
+      - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-      
-      - name: Make envfile
-        uses: SpicyPizza/create-envfile-action@v2
+
+      # Cria .env com a URL do Neon (configure o secret DATABASE_URL no repositório)
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v1.3
         with:
-          envkey_DATABASE_URL: $ {{ secrets.DATABASE_URL }}
-      
-      - name: Run Migrations
-        run: npx prisma migrate deploy
+          directory: .
+          file_name: .env
+          fail_on_empty: true
+          envkey_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # Carrega o .env e aplica migrations no Neon
+      - name: Run migrations
+        run: npx dotenv -e .env -- npx prisma migrate deploy
