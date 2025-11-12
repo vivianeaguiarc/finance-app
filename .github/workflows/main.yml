@@ -1,72 +1,3 @@
-# # .github/workflows/main.yml
-# name: CI
-
-# on:
-#   push:
-#     branches: ['**']
-#   pull_request:
-#     branches: ['**']
-
-# jobs:
-#   check:
-#     runs-on: ubuntu-latest
-
-#     services:
-#       postgres:
-#         image: postgres:16
-#         env:
-#           POSTGRES_USER: postgres
-#           POSTGRES_PASSWORD: password
-#           POSTGRES_DB: finance_app_test
-#         ports:
-#           - "5432:5432"
-#         options: >-
-#           --health-cmd="pg_isready -U postgres"
-#           --health-interval=10s
-#           --health-timeout=5s
-#           --health-retries=10
-
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-
-#       - name: Setup Node
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'
-#           cache: 'npm'
-#       - name: Create .env.test file
-#         run: |
-#           echo DATABASE_URL="postgres://postgres:password@localhost:5432/finance_app_test" >> .env.test
-
-#       - name: Show versions
-#         run: |
-#           node -v
-#           npm -v
-#           psql --version || true
-
-#       - name: Install deps
-#         run: npm ci --no-audit --no-fund
-
-#       - name: Lint (ESLint)
-#         run: npm run eslint:check
-
-#       - name: Prettier check
-#         run: npm run prettier:check
-
-#       - name: Wait for DB
-#         run: |
-#           for i in {1..30}; do
-#             pg_isready -h localhost -p 5432 -U postgres && break
-#             sleep 1
-#           done
-
-#       - name: Tests (coverage)
-#         env:
-#           # ajuste conforme sua app lê a URL (ex.: DATABASE_URL, PGHOST, etc.)
-#           DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
-#           NODE_ENV: test
-#         run: npm run coverage
 name: CI
 
 on:
@@ -144,3 +75,45 @@ jobs:
 
       - name: Tests (CI)
         run: npm run test:ci
+
+  # 🧩 Job separado para executar migrations em produção/staging (opcional)
+  # migrate:
+  #   runs-on: ubuntu-latest
+  #   needs: check
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+     
+  #     - name: Install dependencies
+  #       run: npm ci --no-audit --no-fund
+
+  migrate: 
+    runs-on: ubuntu-latest
+    needs: check
+    environment: production
+    steps:
+      - name: Checkout code 
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile-action@v2
+        with:
+          envkey_DATABASE_URL: $ {{ secrets.DATABASE_URL }}
+      
+      - name: Run Migrations
+        run: npx prisma migrate deploy
