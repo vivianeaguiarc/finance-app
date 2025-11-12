@@ -111,9 +111,11 @@ describe('PostgresUpdateTransactionRepository', () => {
     })
     it('should throw TransactionNotFoundError if prisma does not record to update', async () => {
         const sut = new PostgresUpdateTransactionRepository()
-        jest.spyOn(prisma.transaction, 'update').mockRejectedValueOnce({
-            code: 'P2025',
-        })
+        import.meta.jest
+            .spyOn(prisma.transaction, 'update')
+            .mockRejectedValueOnce({
+                code: 'P2025',
+            })
 
         const promise = sut.execute(transaction.id, transaction)
         await expect(promise).rejects.toThrow(

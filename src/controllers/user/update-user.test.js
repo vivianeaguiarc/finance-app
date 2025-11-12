@@ -77,32 +77,32 @@ describe('UpdateUserController', () => {
     })
     it('should return 500 if UpdateUserUseCase throws', async () => {
         const { sut, updateUserUseCase } = makeSut()
-        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
-            new Error(),
-        )
+        import.meta.jest
+            .spyOn(updateUserUseCase, 'execute')
+            .mockRejectedValueOnce(new Error())
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(500)
     })
 
     it('should return 500 if UpdateUserUseCase throws', async () => {
         const { sut, updateUserUseCase } = makeSut()
-        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
-            new Error('db down'),
-        )
+        import.meta.jest
+            .spyOn(updateUserUseCase, 'execute')
+            .mockRejectedValueOnce(new Error('db down'))
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(500)
     })
     it('should return 400 if email is already in use', async () => {
         const { sut, updateUserUseCase } = makeSut()
-        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
-            new EmailAlreadyInUseError(),
-        )
+        import.meta.jest
+            .spyOn(updateUserUseCase, 'execute')
+            .mockRejectedValueOnce(new EmailAlreadyInUseError())
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(400)
     })
     it('should call UpdateUserUseCase with correct values', async () => {
         const { sut, updateUserUseCase } = makeSut()
-        const executeSpy = jest.spyOn(updateUserUseCase, 'execute')
+        const executeSpy = import.meta.jest.spyOn(updateUserUseCase, 'execute')
         await sut.execute(httpRequest)
         expect(executeSpy).toHaveBeenCalledWith(
             httpRequest.params.userId,
@@ -111,17 +111,21 @@ describe('UpdateUserController', () => {
     })
     it('should throw UserNotFoundError generic if prisma does not find to update', async () => {
         const { sut, updateUserUseCase } = makeSut()
-        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
-            new UserNotFoundError(httpRequest.params.userId),
-        )
+        import.meta.jest
+            .spyOn(updateUserUseCase, 'execute')
+            .mockRejectedValueOnce(
+                new UserNotFoundError(httpRequest.params.userId),
+            )
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(404)
     })
     it('should return 404 if UpdateUserUseCase throws UserNotFoundError', async () => {
         const { sut, updateUserUseCase } = makeSut()
-        jest.spyOn(updateUserUseCase, 'execute').mockRejectedValueOnce(
-            new UserNotFoundError(httpRequest.params.userId),
-        )
+        import.meta.jest
+            .spyOn(updateUserUseCase, 'execute')
+            .mockRejectedValueOnce(
+                new UserNotFoundError(httpRequest.params.userId),
+            )
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(404)
     })

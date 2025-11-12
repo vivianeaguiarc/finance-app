@@ -29,7 +29,10 @@ describe('Update Transaction Use Case', () => {
     })
     it('should call UpdateTransactionRepository with correct values', async () => {
         const { sut, updateTransactionRepositoryStub } = makeSut()
-        const updateSpy = jest.spyOn(updateTransactionRepositoryStub, 'execute')
+        const updateSpy = import.meta.jest.spyOn(
+            updateTransactionRepositoryStub,
+            'execute',
+        )
         const id = faker.string.uuid()
         const updateData = {
             amount: Number(faker.finance.amount()),
@@ -39,12 +42,11 @@ describe('Update Transaction Use Case', () => {
     })
     it('should throw if UpdateTransactionRepository throws', async () => {
         const { sut, updateTransactionRepositoryStub } = makeSut()
-        jest.spyOn(
-            updateTransactionRepositoryStub,
-            'execute',
-        ).mockImplementationOnce(() => {
-            throw new Error('Repository error')
-        })
+        import.meta.jest
+            .spyOn(updateTransactionRepositoryStub, 'execute')
+            .mockImplementationOnce(() => {
+                throw new Error('Repository error')
+            })
         const id = faker.string.uuid()
         const updateData = {
             amount: Number(faker.finance.amount()),

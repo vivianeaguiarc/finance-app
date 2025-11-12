@@ -10,7 +10,7 @@ describe('GetUserByEmailRepository', () => {
         expect(result).toStrictEqual(user)
     })
     it('should call prisma with correct params', async () => {
-        const prismaSpy = jest.spyOn(prisma.user, 'findUnique')
+        const prismaSpy = import.meta.jest.spyOn(prisma.user, 'findUnique')
         const sut = new PostgresGetUserByEmailRepository()
         await sut.execute(fakeUser.email)
         expect(prismaSpy).toHaveBeenCalledWith({
@@ -21,7 +21,9 @@ describe('GetUserByEmailRepository', () => {
     })
     it('should throw if prisma throws', async () => {
         const sut = new PostgresGetUserByEmailRepository()
-        jest.spyOn(prisma.user, 'findUnique').mockRejectedValueOnce(new Error())
+        import.meta.jest
+            .spyOn(prisma.user, 'findUnique')
+            .mockRejectedValueOnce(new Error())
         const promise = sut.execute(fakeUser.email)
         await expect(promise).rejects.toThrow()
     })

@@ -17,7 +17,7 @@
 //         await prisma.user.create({
 //             data: user,
 //         })
-//         const prismaSpy = jest.spyOn(prisma.user, 'delete')
+//         const prismaSpy = import.meta.jest.spyOn(prisma.user, 'delete')
 //         const sut = new PostgresDeleteUserRepository()
 //         await sut.execute(user.id)
 //         expect(prismaSpy).toHaveBeenCalledWith({
@@ -28,7 +28,7 @@
 //     })
 //     it('should return null if prisma throws', async () => {
 //         const sut = new PostgresDeleteUserRepository()
-//         jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
+//         import.meta.jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
 //             new Error('boom'),
 //         )
 
@@ -38,7 +38,7 @@
 //     })
 //     it('should return 500 if prisma throws', async () => {
 //         const sut = new PostgresDeleteUserRepository()
-//         jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
+//         import.meta.jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
 //             new Error('boom'),
 //         )
 
@@ -48,7 +48,7 @@
 //     })
 //     it('should throw generic if prisma throws generic error', async () => {
 //         const sut = new PostgresDeleteUserRepository()
-//         jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
+//         import.meta.jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
 //             new Error()
 //         )
 
@@ -57,7 +57,7 @@
 //     })
 //     it('should throw generic if prisma throws generic error', async () => {
 //         const sut = new PostgresDeleteUserRepository()
-//         jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
+//         import.meta.jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
 //             new PrismaClientKnownRequestError('', { code: 'P2025', clientVersion: '3.0.0' })
 //         )
 
@@ -85,7 +85,7 @@ describe('DeleteUserRepository', () => {
         await prisma.user.create({
             data: user,
         })
-        const prismaSpy = jest.spyOn(prisma.user, 'delete')
+        const prismaSpy = import.meta.jest.spyOn(prisma.user, 'delete')
         const sut = new PostgresDeleteUserRepository()
         await sut.execute(user.id)
         expect(prismaSpy).toHaveBeenCalledWith({
@@ -98,14 +98,18 @@ describe('DeleteUserRepository', () => {
     it('should re-throw generic error if prisma throws', async () => {
         const sut = new PostgresDeleteUserRepository()
         const mockError = new Error('boom')
-        jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(mockError)
+        import.meta.jest
+            .spyOn(prisma.user, 'delete')
+            .mockRejectedValueOnce(mockError)
         await expect(sut.execute(user.id)).rejects.toThrow(mockError)
     })
 
     it('should throw UserNotFoundError generic if prisma does not find to delete', async () => {
         const sut = new PostgresDeleteUserRepository()
         const mockError = new Error()
-        jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(mockError)
+        import.meta.jest
+            .spyOn(prisma.user, 'delete')
+            .mockRejectedValueOnce(mockError)
         const promise = sut.execute(user.id)
         await expect(promise).rejects.toThrow(mockError)
     })
@@ -113,7 +117,7 @@ describe('DeleteUserRepository', () => {
     it('should throw UserNotFoundError if user does not exist (P2025)', async () => {
         const sut = new PostgresDeleteUserRepository()
 
-        jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
+        import.meta.jest.spyOn(prisma.user, 'delete').mockRejectedValueOnce(
             new PrismaClientKnownRequestError('Record not found', {
                 code: 'P2025',
                 clientVersion: '3.0.0',

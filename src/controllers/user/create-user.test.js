@@ -69,7 +69,7 @@ describe('Create User Controller', () => {
     })
     it('should call CreateUserUseCase with correct params', async () => {
         const { sut, createUserUseCase } = makeSut()
-        const executeSpy = jest.spyOn(createUserUseCase, 'execute')
+        const executeSpy = import.meta.jest.spyOn(createUserUseCase, 'execute')
         await sut.execute(httpRequest)
         expect(executeSpy).toHaveBeenCalledWith(httpRequest.body)
     })
@@ -87,9 +87,11 @@ describe('Create User Controller', () => {
     })
     it('should return 500 if CreateUserUseCase throws EmailIsAlreadyInUse error', async () => {
         const { sut, createUserUseCase } = makeSut()
-        jest.spyOn(createUserUseCase, 'execute').mockRejectedValueOnce(
-            new EmailAlreadyInUseError(httpRequest.body.email),
-        )
+        import.meta.jest
+            .spyOn(createUserUseCase, 'execute')
+            .mockRejectedValueOnce(
+                new EmailAlreadyInUseError(httpRequest.body.email),
+            )
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(400)
     })

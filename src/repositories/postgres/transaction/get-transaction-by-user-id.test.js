@@ -30,7 +30,7 @@
 //         ).toBe(true)
 //     })
 //     it('should call Prisma with correct params', async () => {
-//         const prismaSpy = jest.spyOn(prisma.transaction, 'delete')
+//         const prismaSpy = import.meta.jest.spyOn(prisma.transaction, 'delete')
 //         const sut = new PostgresDeleteTransactionRepository()
 //         await sut.execute(transaction.id)
 
@@ -40,7 +40,7 @@
 //     })
 //     it('should return null if prisma throws', async () => {
 //         const sut = new PostgresDeleteTransactionRepository()
-//         jest.spyOn(prisma.transaction, 'delete').mockRejectedValueOnce(
+//         import.meta.jest.spyOn(prisma.transaction, 'delete').mockRejectedValueOnce(
 //             new Error('Prisma error'),
 //         )
 
@@ -105,7 +105,7 @@ describe('PostgresDeleteTransactionRepository', () => {
     it('should call Prisma with correct params', async () => {
         await setupTransaction() // Garante que a transação exista
 
-        const prismaSpy = jest.spyOn(prisma.transaction, 'delete')
+        const prismaSpy = import.meta.jest.spyOn(prisma.transaction, 'delete')
         const sut = new PostgresDeleteTransactionRepository()
         await sut.execute(transaction.id)
 
@@ -121,9 +121,9 @@ describe('PostgresDeleteTransactionRepository', () => {
         const prismaError = new Error('Prisma database failure') // Erro customizado
 
         // Mock para que o Prisma lance um erro genérico
-        jest.spyOn(prisma.transaction, 'delete').mockRejectedValueOnce(
-            prismaError,
-        )
+        import.meta.jest
+            .spyOn(prisma.transaction, 'delete')
+            .mockRejectedValueOnce(prismaError)
 
         // O teste espera que a execução re-lance o erro
         await expect(sut.execute(transaction.id)).rejects.toThrow(prismaError)

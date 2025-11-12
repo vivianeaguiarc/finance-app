@@ -96,15 +96,18 @@ describe('Create TransactionController', () => {
     it('should return 500 if CreateTransactionUseCase throws', async () => {
         // erro 500
         const { sut, createTransactionUseCase } = makeSut()
-        jest.spyOn(createTransactionUseCase, 'execute').mockRejectedValueOnce(
-            new Error(),
-        )
+        import.meta.jest
+            .spyOn(createTransactionUseCase, 'execute')
+            .mockRejectedValueOnce(new Error())
         const result = await sut.execute(baseHttpRequest)
         expect(result.statusCode).toBe(500)
     })
     it('should call CreateTransactionUseCase with correct values', async () => {
         const { sut, createTransactionUseCase } = makeSut()
-        const executeSpy = jest.spyOn(createTransactionUseCase, 'execute')
+        const executeSpy = import.meta.jest.spyOn(
+            createTransactionUseCase,
+            'execute',
+        )
         await sut.execute(baseHttpRequest)
         expect(executeSpy).toHaveBeenCalledWith(baseHttpRequest.body)
     })

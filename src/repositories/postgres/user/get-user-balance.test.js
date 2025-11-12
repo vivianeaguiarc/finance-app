@@ -63,7 +63,10 @@ describe('PostgresGetUserBalanceRepository', () => {
     })
     it('should call prisma with correct params', async () => {
         const sut = new PostgresGetUserBalanceRepository()
-        const prismaSpy = jest.spyOn(prisma.transaction, 'aggregate')
+        const prismaSpy = import.meta.jest.spyOn(
+            prisma.transaction,
+            'aggregate',
+        )
         await sut.execute(faker.string.uuid())
         expect(prismaSpy).toHaveBeenCalledTimes(3)
         expect(prismaSpy).toHaveBeenNthCalledWith(1, {

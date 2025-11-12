@@ -76,17 +76,20 @@ describe('Get Transaction By User Id Controller', () => {
     })
     it('should return 500 when the use case throws', async () => {
         const { sut, updateTransactionUseCase } = makeSut()
-        jest.spyOn(updateTransactionUseCase, 'execute').mockImplementationOnce(
-            () => {
+        import.meta.jest
+            .spyOn(updateTransactionUseCase, 'execute')
+            .mockImplementationOnce(() => {
                 throw new Error()
-            },
-        )
+            })
         const response = await sut.execute(baseHttpRequest)
         expect(response.statusCode).toBe(500)
     })
     it('should call UpdateTransactionUseCase with correct values', async () => {
         const { sut, updateTransactionUseCase } = makeSut()
-        const executeSpy = jest.spyOn(updateTransactionUseCase, 'execute')
+        const executeSpy = import.meta.jest.spyOn(
+            updateTransactionUseCase,
+            'execute',
+        )
         await sut.execute(baseHttpRequest)
         expect(executeSpy).toHaveBeenCalledWith(
             baseHttpRequest.params.transactionId,
@@ -95,9 +98,9 @@ describe('Get Transaction By User Id Controller', () => {
     })
     it('should return 404 when TransactionNotFoundError is thrown', async () => {
         const { sut, updateTransactionUseCase } = makeSut()
-        jest.spyOn(updateTransactionUseCase, 'execute').mockRejectedValueOnce(
-            new TransactionNotFoundError(),
-        )
+        import.meta.jest
+            .spyOn(updateTransactionUseCase, 'execute')
+            .mockRejectedValueOnce(new TransactionNotFoundError())
         const response = await sut.execute(baseHttpRequest)
         expect(response.statusCode).toBe(404)
     })
