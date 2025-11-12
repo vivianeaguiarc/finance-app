@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/vivianeaguiarc/finance-app#readme",
   "devDependencies": {
-    "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "@faker-js/faker": "^10.1.0",
     "@types/jest": "^30.0.0",
