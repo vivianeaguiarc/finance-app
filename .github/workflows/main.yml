@@ -1,38 +1,38 @@
 name: CI
 
 on:
-    push:
-        branches:
-            - '**'
-    pull_request:
-        branches:
-            - '**'
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
 
 jobs:
-    check:
-        runs-on: ubuntu-latest
+  check:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '20'
-                  cache: 'npm'
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-            - name: Install deps
-              run: npm ci
+      - name: Show versions
+        run: |
+          node -v
+          npm -v
 
-            - name: Lint (ESLint)
-              run: npm run eslint:check
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
 
-            - name: Prettier check
-              run: npm run prettier:check
+      - name: Lint (ESLint)
+        run: npm run eslint:check
 
-            - name: Tests (coverage)
+      - name: Prettier check
+        run: npm run prettier:check
 
-              env:
-                  NODE_OPTIONS: --experimental-vm-modules
-              run: npm run coverage
+      - name: Tests (coverage)
+        run: npm run coverage
