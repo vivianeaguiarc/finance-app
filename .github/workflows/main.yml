@@ -1,3 +1,4 @@
+# .github/workflows/main.yml
 name: CI
 
 on:
@@ -9,6 +10,21 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: finance_app_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     steps:
       - name: Checkout
@@ -24,6 +40,7 @@ jobs:
         run: |
           node -v
           npm -v
+          psql --version || true
 
       - name: Install deps
         run: npm ci --no-audit --no-fund
@@ -34,5 +51,16 @@ jobs:
       - name: Prettier check
         run: npm run prettier:check
 
+      - name: Wait for DB
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            sleep 1
+          done
+
       - name: Tests (coverage)
+        env:
+          # ajuste conforme sua app lê a URL (ex.: DATABASE_URL, PGHOST, etc.)
+          DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
+          NODE_ENV: test
         run: npm run coverage
