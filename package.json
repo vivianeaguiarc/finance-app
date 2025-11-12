@@ -9,7 +9,9 @@
     "coverage": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
     "postinstall": "npx husky install && npx prisma generate",
     "migrations": "node src/db/postgres/migrations/exec.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "eslint:check": "eslint src --ext .js",
+    "prettier:check": "prettier --check src"
   },
   "repository": {
     "type": "git",
