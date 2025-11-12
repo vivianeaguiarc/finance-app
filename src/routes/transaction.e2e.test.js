@@ -1,4 +1,4 @@
-import { app } from '../app.cjs'
+import { app } from '../app.js'
 import request from 'supertest'
 import { transaction, user } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
