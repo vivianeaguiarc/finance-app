@@ -27,5 +27,6 @@ beforeEach(async () => {
 afterAll(async () => {
     try {
         await prisma.$disconnect()
+    // eslint-disable-next-line no-empty
     } catch {}
 })

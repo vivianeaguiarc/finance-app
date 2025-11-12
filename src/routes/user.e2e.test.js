@@ -1,5 +1,5 @@
+import { app } from '../app.cjs'
 import request from 'supertest'
-import { app } from '../app.js'
 import { user } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
 // import { TransactionType } from '@prisma/client'
