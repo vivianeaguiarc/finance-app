@@ -1,29 +1,36 @@
-name: Deploy
-on: 
+name: CI
+
+on:
   push:
-    branches:
-      - main
-      - develop
-      - database-setup
-      - tests
+    branches: [main, develop, database-setup, tests]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
   check:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      
-      - name: Use Node.js
-        uses: actions/setup-node@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: ESlint
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint (ESLint)
         run: npm run eslint:check
 
-      - name: Prettier
+      - name: Prettier check
         run: npm run prettier:check
+
+      - name: Tests (coverage)
         
-      - name: Tests
-        run: npm run test
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
+        run: npm run coverage
