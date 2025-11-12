@@ -37,14 +37,10 @@ beforeEach(async () => {
     await prisma.$transaction(async (tx) => {
         try {
             await tx.transaction.deleteMany({})
-        } catch {
-            /* tabela pode não existir */
-        }
+        } catch {}
         try {
             await tx.user.deleteMany({})
-        } catch {
-            /* idem */
-        }
+        } catch {}
     })
 })
 

@@ -79,8 +79,8 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
+    # Variáveis válidas para todo o job (inclui Prisma e testes)
     env:
-      # 👇 Usado por todos os steps (prisma e testes)
       DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
       NODE_ENV: test
       CI: 'true'
@@ -121,7 +121,7 @@ jobs:
 
       - name: Wait for DB
         run: |
-          for i in {1..40}; do
+          for i in {1..60}; do
             pg_isready -h localhost -p 5432 -U postgres && exit 0
             sleep 1
           done
@@ -130,14 +130,15 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
-      # Tenta aplicar migrations; se não houver migrations versionadas, faz db push
-      - name: Apply schema (migrate or push)
+      # ✅ Se houver migrations versionadas, aplica; senão, faz db push
+      - name: Apply Prisma schema
         run: |
           set -e
-          if npx prisma migrate deploy; then
-            echo "✅ Migrations aplicadas"
+          if [ -d prisma/migrations ] && [ "$(ls -A prisma/migrations)" ]; then
+            echo "Found migrations -> prisma migrate deploy"
+            npx prisma migrate deploy
           else
-            echo "⚠️  Sem migrations — usando db push"
+            echo "No migrations -> prisma db push"
             npx prisma db push --accept-data-loss
           fi
 
