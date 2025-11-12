@@ -13,20 +13,41 @@
 // })
 
 
-import { prisma } from './prisma/prisma.js' // ajuste o path se for src/prisma/...
+// import { prisma } from './prisma/prisma.js' // ajuste o path se for src/prisma/...
 
-jest.setTimeout(30000)
+// jest.setTimeout(30000)
+
+// beforeEach(async () => {
+//     await prisma.$transaction(async (tx) => {
+//         await tx.transaction.deleteMany({})
+//         await tx.user.deleteMany({})
+//     })
+// })
+
+// afterAll(async () => {
+//     try {
+//         await prisma.$disconnect()
+//     // eslint-disable-next-line no-empty
+//     } catch {}
+// })
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
 
 beforeEach(async () => {
     await prisma.$transaction(async (tx) => {
-        await tx.transaction.deleteMany({})
-        await tx.user.deleteMany({})
+        try {
+            await tx.transaction.deleteMany({})
+        } catch {
+            /* tabela pode não existir */
+        }
+        try {
+            await tx.user.deleteMany({})
+        } catch {
+            /* idem */
+        }
     })
 })
 
 afterAll(async () => {
-    try {
-        await prisma.$disconnect()
-    // eslint-disable-next-line no-empty
-    } catch {}
+    await prisma.$disconnect()
 })

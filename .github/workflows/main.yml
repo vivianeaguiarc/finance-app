@@ -1,4 +1,72 @@
-# .github/workflows/main.yml
+# # .github/workflows/main.yml
+# name: CI
+
+# on:
+#   push:
+#     branches: ['**']
+#   pull_request:
+#     branches: ['**']
+
+# jobs:
+#   check:
+#     runs-on: ubuntu-latest
+
+#     services:
+#       postgres:
+#         image: postgres:16
+#         env:
+#           POSTGRES_USER: postgres
+#           POSTGRES_PASSWORD: password
+#           POSTGRES_DB: finance_app_test
+#         ports:
+#           - "5432:5432"
+#         options: >-
+#           --health-cmd="pg_isready -U postgres"
+#           --health-interval=10s
+#           --health-timeout=5s
+#           --health-retries=10
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
+#           cache: 'npm'
+#       - name: Create .env.test file
+#         run: |
+#           echo DATABASE_URL="postgres://postgres:password@localhost:5432/finance_app_test" >> .env.test
+
+#       - name: Show versions
+#         run: |
+#           node -v
+#           npm -v
+#           psql --version || true
+
+#       - name: Install deps
+#         run: npm ci --no-audit --no-fund
+
+#       - name: Lint (ESLint)
+#         run: npm run eslint:check
+
+#       - name: Prettier check
+#         run: npm run prettier:check
+
+#       - name: Wait for DB
+#         run: |
+#           for i in {1..30}; do
+#             pg_isready -h localhost -p 5432 -U postgres && break
+#             sleep 1
+#           done
+
+#       - name: Tests (coverage)
+#         env:
+#           # ajuste conforme sua app lê a URL (ex.: DATABASE_URL, PGHOST, etc.)
+#           DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
+#           NODE_ENV: test
+#         run: npm run coverage
 name: CI
 
 on:
@@ -11,6 +79,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
+    env:
+      # 👇 Usado por todos os steps (prisma e testes)
+      DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
+      NODE_ENV: test
+      CI: 'true'
+
     services:
       postgres:
         image: postgres:16
@@ -19,7 +93,7 @@ jobs:
           POSTGRES_PASSWORD: password
           POSTGRES_DB: finance_app_test
         ports:
-          - "5432:5432"
+          - '5432:5432'
         options: >-
           --health-cmd="pg_isready -U postgres"
           --health-interval=10s
@@ -35,15 +109,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Create .env.test file
-        run: |
-          echo DATABASE_URL="postgres://postgres:password@localhost:5432/finance_app_test" >> .env.test
-
-      - name: Show versions
-        run: |
-          node -v
-          npm -v
-          psql --version || true
 
       - name: Install deps
         run: npm ci --no-audit --no-fund
@@ -56,14 +121,25 @@ jobs:
 
       - name: Wait for DB
         run: |
-          for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U postgres && break
+          for i in {1..40}; do
+            pg_isready -h localhost -p 5432 -U postgres && exit 0
             sleep 1
           done
+          exit 1
 
-      - name: Tests (coverage)
-        env:
-          # ajuste conforme sua app lê a URL (ex.: DATABASE_URL, PGHOST, etc.)
-          DATABASE_URL: postgres://postgres:password@localhost:5432/finance_app_test
-          NODE_ENV: test
-        run: npm run coverage
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # Tenta aplicar migrations; se não houver migrations versionadas, faz db push
+      - name: Apply schema (migrate or push)
+        run: |
+          set -e
+          if npx prisma migrate deploy; then
+            echo "✅ Migrations aplicadas"
+          else
+            echo "⚠️  Sem migrations — usando db push"
+            npx prisma db push --accept-data-loss
+          fi
+
+      - name: Tests (CI)
+        run: npm run test:ci
