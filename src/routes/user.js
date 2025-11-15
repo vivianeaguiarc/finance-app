@@ -5,6 +5,7 @@ import {
     makeCreateUserController,
     makeUpdateUserController,
     makeGetUserBalanceController,
+    makeLoginUserController,
 } from '../factories/controllers/user.js'
 import { makeGetTransactionBalanceController } from '../factories/controllers/transaction.js'
 
@@ -40,5 +41,10 @@ usersRouter.patch('/:userId', async (request, response) => {
 usersRouter.delete('/:userId', async (request, response) => {
     const deleteUserController = makeDeleteUserController()
     const { statusCode, body } = await deleteUserController.execute(request)
+    response.status(statusCode).send(body)
+})
+usersRouter.use(async (request, response) => {
+    const loginUserController = makeLoginUserController()
+    const { statusCode, body } = await loginUserController.execute(request)
     response.status(statusCode).send(body)
 })
