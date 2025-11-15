@@ -25,7 +25,9 @@ import {
     IdGeneratorAdapter,
     PasswordComparatorAdapter,
     TokensGeneratorAdapter,
+    PasswordHasherAdapter,
 } from '../../adapters/index.js'
+
 import { LoginUserController } from '../../controllers/user/login-user.js'
 
 export const makeGetUserByIdController = () => {
