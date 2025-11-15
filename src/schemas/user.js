@@ -14,3 +14,14 @@ export const createdUserSchema = z.object({
 export const updatedUserSchema = createdUserSchema.partial().strict({
     message: 'Some fields are not allowed to be updated',
 })
+export const loginSchema = z.object({
+    email: z
+        .string()
+        .email({ message: 'Please provide a valid e-mail.' })
+        .trim()
+        .min(1, { message: 'Email is required' }),
+    password: z
+        .string()
+        .trim()
+        .min(6, { message: 'Password must be at least 6 characters long' }),
+})
