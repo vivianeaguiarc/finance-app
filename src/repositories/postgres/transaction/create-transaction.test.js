@@ -1,4 +1,3 @@
-// src/repositories/postgres/transaction/create-transaction.test.js
 import { prisma } from '../../../../prisma/prisma.js'
 import { PostgresCreateTransactionRepository } from './create-transaction.js'
 import dayjs from 'dayjs'
@@ -19,24 +18,15 @@ describe('PostgresCreateTransactionRepository', () => {
         const txDate = dayjs.utc(transaction.date).startOf('day').toDate()
 
         const sut = new PostgresCreateTransactionRepository()
-
-        // ⚠️ use a MESMA chave do seu model Prisma:
-        // - se o model usa "userId" (camelCase com @map("user_id")), use userId:
-        // const result = await sut.execute({ ...transaction, userId: user.id, date: txDate })
-        // - se o model usa "user_id" (snake_case), use user_id:
         const result = await sut.execute({
             ...transaction,
             user_id: user.id,
             date: txDate,
         })
 
-        // asserts
         expect(result.name).toBe(transaction.name)
-        // Prisma.Decimal -> compare como string
         expect(result.amount.toString()).toBe(transaction.amount.toString())
         expect(result.type).toBe(transaction.type)
-
-        // ⚠️ idem aqui: se o retorno do Prisma é "userId" (camelCase), troque para result.userId
         expect(result.user_id).toBe(user.id)
 
         // compare apenas a parte de data (evita fuso)

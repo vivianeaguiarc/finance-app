@@ -9,26 +9,27 @@ describe('Create User Controller', () => {
             return user
         }
     }
+
     const makeSut = () => {
         const createUserUseCase = new CreateUserUseCaseStub()
         const sut = new CreateUserController(createUserUseCase)
-        return {
-            sut,
-            createUserUseCase,
-        }
+        return { sut, createUserUseCase }
     }
+
     const httpRequest = {
         body: {
             ...user,
             id: undefined,
         },
     }
+
     it('should return 201 when creating a user successfully', async () => {
         const { sut } = makeSut()
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(201)
         expect(result.body).toEqual(user)
     })
+
     it('should return 400 if first_name is not provided', async () => {
         const { sut } = makeSut()
         const result = await sut.execute({
@@ -36,6 +37,7 @@ describe('Create User Controller', () => {
         })
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 if last_name is not provided', async () => {
         const { sut } = makeSut()
         const result = await sut.execute({
@@ -43,6 +45,7 @@ describe('Create User Controller', () => {
         })
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 if email is not provided', async () => {
         const { sut } = makeSut()
         const result = await sut.execute({
@@ -50,6 +53,7 @@ describe('Create User Controller', () => {
         })
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 if password is not provided', async () => {
         const { sut } = makeSut()
         const result = await sut.execute({
@@ -57,6 +61,7 @@ describe('Create User Controller', () => {
         })
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 if password length is less than 6 characters', async () => {
         const { sut } = makeSut()
         const result = await sut.execute({
@@ -67,32 +72,40 @@ describe('Create User Controller', () => {
         })
         expect(result.statusCode).toBe(400)
     })
+
     it('should call CreateUserUseCase with correct params', async () => {
         const { sut, createUserUseCase } = makeSut()
+
         const executeSpy = import.meta.jest.spyOn(createUserUseCase, 'execute')
+
         await sut.execute(httpRequest)
+
         expect(executeSpy).toHaveBeenCalledWith(httpRequest.body)
     })
+
     it('should return 500 if CreateUserUseCase throws', async () => {
         const { sut, createUserUseCase } = makeSut()
-        const executeSpy = jest
+
+        import.meta.jest
             .spyOn(createUserUseCase, 'execute')
-            .mockRejectedValueOnce(() => {
-                {
-                    throw new Error()
-                }
-            })
-        await sut.execute(httpRequest)
-        expect(executeSpy).toHaveBeenCalledWith(httpRequest.body)
+            .mockRejectedValueOnce(new Error('internal error'))
+
+        const result = await sut.execute(httpRequest)
+
+        expect(result.statusCode).toBe(500)
     })
-    it('should return 500 if CreateUserUseCase throws EmailIsAlreadyInUse error', async () => {
+
+    it('should return 400 if CreateUserUseCase throws EmailIsAlreadyInUse error', async () => {
         const { sut, createUserUseCase } = makeSut()
+
         import.meta.jest
             .spyOn(createUserUseCase, 'execute')
             .mockRejectedValueOnce(
                 new EmailAlreadyInUseError(httpRequest.body.email),
             )
+
         const result = await sut.execute(httpRequest)
+
         expect(result.statusCode).toBe(400)
     })
 })

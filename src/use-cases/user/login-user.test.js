@@ -1,0 +1,71 @@
+import { LoginUserUseCase } from './login-user.js'
+import { user } from '../../tests/fixtures/user.js'
+import { InvalidPasswordError, UserNotFoundError } from '../../errors/user.js'
+
+describe('LoginUserUseCase', () => {
+    class GetUserByEmailRepositoryStub {
+        async execute() {
+            return user
+        }
+    }
+
+    class PasswordComparatorAdapterStub {
+        async execute() {
+            return true
+        }
+    }
+    class TokensGeneratorAdapterStub {
+        execute() {
+            return {
+                accessToken: 'any_access_token',
+                refreshToken: 'any_refresh_token',
+            }
+        }
+    }
+    const makeSut = () => {
+        const getUserByEmailRepositoryStub = new GetUserByEmailRepositoryStub()
+        const passwordComparatorAdapterStub =
+            new PasswordComparatorAdapterStub()
+        const tokensGeneratorAdapterStub = new TokensGeneratorAdapterStub()
+        const sut = new LoginUserUseCase(
+            getUserByEmailRepositoryStub,
+            passwordComparatorAdapterStub,
+            tokensGeneratorAdapterStub,
+        )
+        return {
+            sut,
+            getUserByEmailRepositoryStub,
+            passwordComparatorAdapterStub,
+            tokensGeneratorAdapterStub,
+        }
+    }
+
+    it('should throw UserNotFoundError if user is not found', async () => {
+        const { sut, getUserByEmailRepositoryStub } = makeSut()
+
+        import.meta.jest
+            .spyOn(getUserByEmailRepositoryStub, 'execute')
+            .mockResolvedValueOnce(null)
+
+        await expect(sut.execute('any_email', 'any_password')).rejects.toThrow(
+            UserNotFoundError,
+        )
+    })
+
+    it('should throw InvalidPasswordError if password is invalid', async () => {
+        const { sut, passwordComparatorAdapterStub } = makeSut()
+
+        import.meta.jest
+            .spyOn(passwordComparatorAdapterStub, 'execute')
+            .mockResolvedValueOnce(false)
+
+        await expect(
+            sut.execute('any_email', 'invalid_password'),
+        ).rejects.toThrow(InvalidPasswordError)
+    })
+    it('should return user with tokens', async () => {
+        const { sut } = makeSut()
+        const response = await sut.execute('any_email', 'any_password')
+        expect(response.tokens).toBeDefined()
+    })
+})

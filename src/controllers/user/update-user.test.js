@@ -10,16 +10,15 @@ describe('UpdateUserController', () => {
             return user
         }
     }
+
     const makeSut = () => {
         const updateUserUseCase = new UpdateUserUseCaseStub()
         const sut = new UpdateUserController(updateUserUseCase)
-        return {
-            sut,
-            updateUserUseCase,
-        }
+        return { sut, updateUserUseCase }
     }
+
     const httpRequest = {
-        params: { userId: faker.string.uuid() }, // <- adicionar
+        params: { userId: faker.string.uuid() },
         body: {
             first_name: faker.person.firstName(),
             last_name: faker.person.lastName(),
@@ -27,11 +26,13 @@ describe('UpdateUserController', () => {
             password: faker.internet.password({ length: 7 }),
         },
     }
+
     it('should return 200 when updating a user successfully', async () => {
         const { sut } = makeSut()
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(200)
     })
+
     it('should return 400 when an invalid email is provided', async () => {
         const { sut } = makeSut()
         const invalidEmailRequest = {
@@ -41,6 +42,7 @@ describe('UpdateUserController', () => {
         const result = await sut.execute(invalidEmailRequest)
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 when an invalid password is provided', async () => {
         const { sut } = makeSut()
         const invalidPasswordRequest = {
@@ -53,6 +55,7 @@ describe('UpdateUserController', () => {
         const result = await sut.execute(invalidPasswordRequest)
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 when an invalid id is provided', async () => {
         const { sut } = makeSut()
         const invalidIdRequest = {
@@ -62,70 +65,64 @@ describe('UpdateUserController', () => {
         const result = await sut.execute(invalidIdRequest)
         expect(result.statusCode).toBe(400)
     })
+
     it('should return 400 when an unallowed field is provided', async () => {
         const { sut } = makeSut()
-        const invalidIdRequest = {
+        const invalidRequest = {
             ...httpRequest,
-            params: { userId: 'invalid_id' },
             body: {
                 ...httpRequest.body,
                 unallowed_field: 'unallowed_value',
             },
         }
-        const result = await sut.execute(invalidIdRequest)
+        const result = await sut.execute(invalidRequest)
         expect(result.statusCode).toBe(400)
-    })
-    it('should return 500 if UpdateUserUseCase throws', async () => {
-        const { sut, updateUserUseCase } = makeSut()
-        import.meta.jest
-            .spyOn(updateUserUseCase, 'execute')
-            .mockRejectedValueOnce(new Error())
-        const result = await sut.execute(httpRequest)
-        expect(result.statusCode).toBe(500)
     })
 
     it('should return 500 if UpdateUserUseCase throws', async () => {
         const { sut, updateUserUseCase } = makeSut()
+
         import.meta.jest
             .spyOn(updateUserUseCase, 'execute')
-            .mockRejectedValueOnce(new Error('db down'))
+            .mockRejectedValueOnce(new Error('unexpected failure'))
+
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(500)
     })
+
     it('should return 400 if email is already in use', async () => {
         const { sut, updateUserUseCase } = makeSut()
+
         import.meta.jest
             .spyOn(updateUserUseCase, 'execute')
             .mockRejectedValueOnce(new EmailAlreadyInUseError())
+
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(400)
     })
+
     it('should call UpdateUserUseCase with correct values', async () => {
         const { sut, updateUserUseCase } = makeSut()
+
         const executeSpy = import.meta.jest.spyOn(updateUserUseCase, 'execute')
+
         await sut.execute(httpRequest)
+
         expect(executeSpy).toHaveBeenCalledWith(
             httpRequest.params.userId,
             httpRequest.body,
         )
     })
-    it('should throw UserNotFoundError generic if prisma does not find to update', async () => {
-        const { sut, updateUserUseCase } = makeSut()
-        import.meta.jest
-            .spyOn(updateUserUseCase, 'execute')
-            .mockRejectedValueOnce(
-                new UserNotFoundError(httpRequest.params.userId),
-            )
-        const result = await sut.execute(httpRequest)
-        expect(result.statusCode).toBe(404)
-    })
+
     it('should return 404 if UpdateUserUseCase throws UserNotFoundError', async () => {
         const { sut, updateUserUseCase } = makeSut()
+
         import.meta.jest
             .spyOn(updateUserUseCase, 'execute')
             .mockRejectedValueOnce(
                 new UserNotFoundError(httpRequest.params.userId),
             )
+
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(404)
     })
