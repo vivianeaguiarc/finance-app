@@ -139,4 +139,66 @@ describe(`User Routes E2E Tests`, () => {
         expect(response.body.tokens.accessToken).toBeDefined()
         expect(response.body.tokens.refreshToken).toBeDefined()
     })
+    it('POST /api/users/login should return 401 when password is invalid', async () => {
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({
+                ...user,
+                id: undefined,
+            })
+        const response = await request(app).post('/api/users/login').send({
+            email: createdUser.email,
+            password: 'invalid_password',
+        })
+        expect(response.status).toBe(401)
+    })
+    it('POST /api/users/login should return 404 when user is not found', async () => {
+        const response = await request(app).post('/api/users/login').send({
+            email: 'nonexistent@example.com',
+            password: 'some_password',
+        })
+        expect(response.status).toBe(404)
+    })
+    it('DELETE /api/users/:userId should return 204 when user is deleted', async () => {
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({
+                ...user,
+                id: undefined,
+            })
+
+        const response = await request(app).delete(
+            `/api/users/${createdUser.id}`,
+        )
+
+        expect(response.status).toBe(204)
+    })
+    it('DELETE /api/users/:userId should return 404 when user is not found', async () => {
+        const response = await request(app).delete(
+            `/api/users/${faker.string.uuid()}`,
+        )
+        expect(response.status).toBe(404)
+    })
+    it('GET /api/users/:userId/balance should return 200 and the user balance when user is found', async () => {
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({
+                ...user,
+                id: undefined,
+            })
+
+        const response = await request(app).get(
+            `/api/users/${createdUser.id}/balance`,
+        )
+
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveProperty('balance')
+        expect(typeof response.body.balance).toBe('number')
+    })
+    it('GET /api/users/:userId/balance should return 404 when user is not found', async () => {
+        const response = await request(app).get(
+            `/api/users/${faker.string.uuid()}/balance`,
+        )
+        expect(response.status).toBe(404)
+    })
 })
