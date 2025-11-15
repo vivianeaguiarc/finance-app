@@ -77,7 +77,7 @@ describe('PostgresUpdateTransactionRepository', () => {
             date: txDate,
         }
 
-        const prismaSpy = jest
+        const prismaSpy = import.meta.jest
             .spyOn(prisma.transaction, 'update')
             .mockResolvedValueOnce({ ...baseTx, ...updateParams })
 
@@ -92,7 +92,7 @@ describe('PostgresUpdateTransactionRepository', () => {
     it('should throw if prisma throws', async () => {
         const sut = new PostgresUpdateTransactionRepository()
 
-        const prismaSpy = jest
+        const prismaSpy = import.meta.jest
             .spyOn(prisma.transaction, 'update')
             .mockRejectedValueOnce(new Error('Prisma error'))
 

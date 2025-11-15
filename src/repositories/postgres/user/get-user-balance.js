@@ -1,4 +1,7 @@
-import { Prisma, TransactionType } from '@prisma/client'
+import pkg from '@prisma/client'
+
+const { Prisma, TransactionType } = pkg
+
 import { prisma } from '../../../../prisma/prisma.js'
 
 export class PostgresGetUserBalanceRepository {
