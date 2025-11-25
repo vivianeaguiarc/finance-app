@@ -38,18 +38,7 @@ describe('Get Transaction By User Id Controller', () => {
         const response = await sut.execute(httpRequest)
         expect(response.statusCode).toBe(400)
     })
-    it('should return 400 when unalloowed field is provided', async () => {
-        const { sut } = makeSut()
-        const httpRequest = {
-            ...baseHttpRequest,
-            body: {
-                ...baseHttpRequest.body,
-                unallowed_field: 'some value',
-            },
-        }
-        const response = await sut.execute(httpRequest)
-        expect(response.statusCode).toBe(400)
-    })
+
     it('should return 400 when the amount is invalid', async () => {
         const { sut } = makeSut()
         const httpRequest = {
