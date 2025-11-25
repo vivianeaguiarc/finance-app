@@ -42,8 +42,6 @@ export class LoginUserController {
                 return notFound(error.message)
             }
 
-            // 500 - erro inesperado
-            console.error('🔥 LOGIN ERROR:', error)
             return serverError()
         }
     }

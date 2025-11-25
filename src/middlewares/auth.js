@@ -2,8 +2,6 @@ import jwt from 'jsonwebtoken'
 
 export const auth = (request, response, next) => {
     try {
-        console.log('AUTH HEADER RECEBIDO:', request.headers.authorization)
-
         const accessToken = request.headers?.authorization?.split('Bearer ')[1]
 
         if (!accessToken) {
