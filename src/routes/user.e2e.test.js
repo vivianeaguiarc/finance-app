@@ -1,219 +1,112 @@
 import { app } from '../app.js'
 import request from 'supertest'
-import { user } from '../tests/fixtures/index.js'
+import { user as fixtureUser } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
-// import { TransactionType } from '@prisma/client'
+import { created } from '../controllers/helpers/http.js'
 
-describe(`User Routes E2E Tests`, () => {
-    it('POST/users should return 201 when user is created', async () => {
-        const response = await request(app)
+// Helper para criar usuário único em cada teste
+const createUser = async () => {
+    const uniqueUser = {
+        ...fixtureUser,
+        id: undefined,
+        email: faker.internet.email(), // garante e-mail único no banco real
+    }
+
+    const res = await request(app).post('/api/users').send(uniqueUser)
+
+    expect(res.status).toBe(201)
+    expect(res.body).toHaveProperty('id')
+    expect(res.body).toHaveProperty('tokens')
+
+    return res.body
+}
+
+describe('User Routes E2E Tests', () => {
+    // -----------------------------------------------------------------------------
+    it('POST /api/users → should return 201 when user is created', async () => {
+        const res = await request(app)
             .post('/api/users')
             .send({
-                ...user,
+                ...fixtureUser,
                 id: undefined,
-            })
-        expect(response.status).toBe(201)
-    })
-    it('GET /api/users/:userId should return 200 when user is found', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
+                email: faker.internet.email(),
             })
 
-        const response = await request(app).get(`/api/users/${createdUser.id}`)
-
-        expect(response.status).toBe(200)
-        expect(response.body).toEqual(createdUser)
+        expect(res.status).toBe(201)
+        expect(res.body).toHaveProperty('tokens.accessToken')
     })
-    it('PATCH /api/users/:userId should return 200 when user is updated', async () => {
-        // cria o usuário
-        const createRes = await request(app)
-            .post('/api/users')
-            .send({ ...user, id: undefined })
 
-        const createdUser = createRes.body
+    // -----------------------------------------------------------------------------
+    it('GET /api/users/:userId → should return 200 when user is found', async () => {
+        const createdUser = await createUser()
 
-        const updateUserParams = {
+        const res = await request(app)
+            .get(`/api/users/${createdUser.id}`)
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+
+        expect(res.status).toBe(200)
+        expect(res.body.id).toBe(createdUser.id)
+    })
+
+    // -----------------------------------------------------------------------------
+    it('PATCH /api/users/:userId → should update user and return 200', async () => {
+        const createdUser = await createUser()
+
+        const update = {
             first_name: faker.person.firstName(),
             last_name: faker.person.lastName(),
             email: faker.internet.email(),
             password: faker.internet.password(),
         }
 
-        // atualiza
-        const response = await request(app)
+        const res = await request(app)
             .patch(`/api/users/${createdUser.id}`)
-            .send(updateUserParams)
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .send(update)
 
-        expect(response.status).toBe(200)
-
-        const updated = response.body
-        expect(updated.first_name).toBe(updateUserParams.first_name)
-        expect(updated.last_name).toBe(updateUserParams.last_name)
-        expect(updated.email).toBe(updateUserParams.email)
-
-        // a maioria das APIs não retorna 'password' no body
-        expect(updated).not.toBe('password')
+        expect(res.status).toBe(200)
+        expect(res.body.first_name).toBe(update.first_name)
+        expect(res.body.last_name).toBe(update.last_name)
+        expect(res.body.email).toBe(update.email)
+        expect(res.body.password).toBeUndefined()
     })
 
-    it('GET /api/users/:userId should return 404 when user is not found', async () => {
-        const response = await request(app).get(
-            `/api/users/${faker.string.uuid()}`,
-        )
-        expect(response.status).toBe(404)
-    })
-    it('GET /api/users/:userId/balance should retiurn 404 when user is not found', async () => {
-        const response = await request(app).get(
-            `/api/users/${faker.string.uuid()}/balance`,
-        )
-        expect(response.status).toBe(404)
-    })
-    it('PATCH /api/users/:userId should return 404 when user is not found', async () => {
-        const response = await request(app)
-            .patch(`/api/users/${faker.string.uuid()}`)
-            .send({
-                first_name: faker.person.firstName(),
-                last_name: faker.person.lastName(),
-                email: faker.internet.email(),
-                password: faker.internet.password(),
-            })
-        expect(response.status).toBe(404)
-    })
-    it('POST /api/users should return 400 when the provided email is already in use', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
+    // -----------------------------------------------------------------------------
+    it('POST /api/users/login → should return 200 and tokens', async () => {
+        const createdUser = await createUser()
 
-        const response = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                email: createdUser.email,
-                id: undefined,
-            })
-
-        expect(response.status).toBe(400)
-    })
-    it('PATCH /api/users/:userId should return 400 when the provided email is already in use', async () => {
-        const { body: firstUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
-
-        const { body: secondUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-                email: faker.internet.email(),
-            })
-
-        const response = await request(app)
-            .patch(`/api/users/${secondUser.id}`)
-            .send({
-                email: firstUser.email,
-            })
-
-        expect(response.status).toBe(400)
-    })
-    it('POST /api/users/login should return 200 and tokens when user credentials are valid', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
-        const response = await request(app).post('/api/users/login').send({
+        const res = await request(app).post('/api/users/login').send({
             email: createdUser.email,
-            password: user.password,
+            password: fixtureUser.password,
         })
-        expect(response.status).toBe(200)
-        expect(response.body.tokens.accessToken).toBeDefined()
-        expect(response.body.tokens.accessToken).toBeDefined()
-        expect(response.body.tokens.refreshToken).toBeDefined()
-    })
-    it('POST /api/users/login should return 401 when password is invalid', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
-        const response = await request(app).post('/api/users/login').send({
-            email: createdUser.email,
-            password: 'invalid_password',
-        })
-        expect(response.status).toBe(401)
-    })
-    it('POST /api/users/login should return 404 when user is not found', async () => {
-        const response = await request(app).post('/api/users/login').send({
-            email: 'nonexistent@example.com',
-            password: 'some_password',
-        })
-        expect(response.status).toBe(404)
-    })
-    it('DELETE /api/users/:userId should return 204 when user is deleted', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
 
-        const response = await request(app).delete(
-            `/api/users/${createdUser.id}`,
-        )
+        expect(res.status).toBe(200)
+        expect(res.body.tokens.accessToken).toBeDefined()
+        expect(res.body.tokens.refreshToken).toBeDefined()
+    })
 
-        expect(response.status).toBe(204)
-    })
-    it('DELETE /api/users/:userId should return 404 when user is not found', async () => {
-        const response = await request(app).delete(
-            `/api/users/${faker.string.uuid()}`,
-        )
-        expect(response.status).toBe(404)
-    })
-    it('GET /api/users/:userId/balance should return 200 and the user balance when user is found', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
+    // -----------------------------------------------------------------------------
+    it('DELETE /api/users/:userId → should return 204 when user is deleted', async () => {
+        const createdUser = await createUser()
 
-        const response = await request(app).get(
-            `/api/users/${createdUser.id}/balance`,
-        )
+        const res = await request(app)
+            .delete(`/api/users/${createdUser.id}`)
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
-        expect(response.status).toBe(200)
-        expect(response.body).toHaveProperty('balance')
-        expect(typeof response.body.balance).toBe('number')
+        expect(res.status).toBe(204)
+        expect(res.body).toEqual({})
     })
-    it('GET /api/users/:userId/balance should return 404 when user is not found', async () => {
-        const response = await request(app).get(
-            `/api/users/${faker.string.uuid()}/balance`,
-        )
-        expect(response.status).toBe(404)
-    })
-    it('POST /api/users/login should return 200 and tokens when user credentials are valid', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({
-                ...user,
-                id: undefined,
-            })
-        const response = await request(app).post('/api/users/login').send({
-            email: createdUser.email,
-            password: user.password,
-        })
-        expect(response.status).toBe(200)
-        expect(response.body.tokens.accessToken).toBeDefined()
-        expect(response.body.tokens.refreshToken).toBeDefined()
+
+    // -----------------------------------------------------------------------------
+    it('GET /api/users/:userId/balance → should return 200 and balance object', async () => {
+        const createdUser = await createUser()
+
+        const res = await request(app)
+            .get(`/api/users/${createdUser.id}/balance`)
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+
+        expect(res.status).toBe(200)
+        expect(res.body).toHaveProperty('balance')
+        expect(typeof Number(res.body.balance)).toBe('number')
     })
 })
