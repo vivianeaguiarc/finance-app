@@ -37,11 +37,11 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('GET /api/users/:userId → should return 200 when user is found', async () => {
+    it('GET /api/users → should return 200 when user is found', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
-            .get(`/api/users/${createdUser.id}`)
+            .get(`/api/users`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(200)
@@ -49,7 +49,7 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('PATCH /api/users/:userId → should update user and return 200', async () => {
+    it('PATCH /api/users → should update user and return 200', async () => {
         const createdUser = await createUser()
 
         const update = {
@@ -60,7 +60,7 @@ describe('User Routes E2E Tests', () => {
         }
 
         const res = await request(app)
-            .patch(`/api/users/${createdUser.id}`)
+            .patch(`/api/users`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
             .send(update)
 
@@ -86,11 +86,11 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('DELETE /api/users/:userId → should return 204 when user is deleted', async () => {
+    it('DELETE /api/users → should return 204 when user is deleted', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
-            .delete(`/api/users/${createdUser.id}`)
+            .delete(`/api/users`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(204)
@@ -98,11 +98,11 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('GET /api/users/:userId/balance → should return 200 and balance object', async () => {
+    it('GET /api/users/balance → should return 200 and balance object', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
-            .get(`/api/users/${createdUser.id}/balance`)
+            .get(`/api/users/balance`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(200)
