@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken'
 
 export const auth = (request, response, next) => {
     try {
+        console.log('AUTH HEADER RECEBIDO:', request.headers.authorization)
+
         const accessToken = request.headers?.authorization?.split('Bearer ')[1]
 
         if (!accessToken) {
@@ -17,10 +19,9 @@ export const auth = (request, response, next) => {
             return response.status(401).send({ error: 'Unauthorized' })
         }
 
-        request.userId = decodedToken.userid
+        request.userId = decodedToken.userId
         next()
     } catch (error) {
-        console.error('Erro na autenticação:', error)
         return response.status(401).send({ error: 'Unauthorized' })
     }
 }
