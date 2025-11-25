@@ -71,7 +71,7 @@ export const makeDeleteUserController = () => {
     return deleteUserController
 }
 export const makeGetUserBalanceController = () => {
-    const getUserBalanceRepository = PostgresGetUserBalanceRepository
+    const getUserBalanceRepository = new PostgresGetUserBalanceRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
     const getUserBalanceUseCase = new GetUserBalanceUseCase(
         getUserBalanceRepository,
