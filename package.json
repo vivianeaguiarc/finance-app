@@ -5,7 +5,7 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "test": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --watch --passWithNoTests --silent --runInBand",
+       "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
         "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
         "coverage": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
         "prepare": "husky install",

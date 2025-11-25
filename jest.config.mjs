@@ -1,36 +1,18 @@
-// // jest.config.mjs
-// export default {
-//     testEnvironment: 'node',
-//     transform: {}, // sem Babel (executa direto como ESM)
-//     setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs', '<rootDir>/jest.setup-after-env.mjs'],
-//     coverageDirectory: 'coverage',
-//     coverageProvider: 'v8',
-//     globalSetup: '<rootDir>/jest.global-setup.mjs',
-//     testMatch: ['**/?(*.)+(spec|test).js'],
-//     collectCoverageFrom: [
-//         'src/**/*.js'],
-
-//     // Ignora arquivos utilitários e dependências no cálculo da cobertura
-//     coveragePathIgnorePatterns: [
-//         '/node_modules/',
-//         'src/controllers/helpers/transaction.js',
-//         'src/controllers/helpers/user.js',
-//     ],
-// }
-
-// jest.config.mjs
-// jest.config.mjs
-// jest.config.mjs
 export default {
     testEnvironment: 'node',
-    transform: {}, // sem Babel
+
+    transform: {},
 
     moduleFileExtensions: ['js', 'json'],
 
-    // quais arquivos são considerados testes
+    // carrega variáveis de ambiente
+    setupFiles: ['dotenv/config'],
+
+    // carrega o setup que remove console.error vermelho
+    setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
+
     testMatch: ['**/*.test.js'],
 
-    // de onde o coverage será coletado
     collectCoverageFrom: ['src/**/*.js'],
 
     coveragePathIgnorePatterns: [
@@ -39,23 +21,19 @@ export default {
         'src/controllers/helpers/user.js',
     ],
 
-    // Jest NÃO vai rodar esses testes (todos encostam em Prisma)
     testPathIgnorePatterns: [
-        // Repositórios que usam Prisma
         'src/repositories/postgres/transaction/',
         'src/repositories/postgres/user/',
-
-        // Testes E2E que sobem a app com Prisma
-        'src/routes/user.e2e.test.js',
         'src/routes/transaction.e2e.test.js',
-
-        // Factories de controllers que instanciam repositórios Prisma
         'src/factories/controllers/user.test.js',
         'src/factories/controllers/transaction.test.js',
     ],
 
-    // Ignorar a pasta .postgres-data no watch e nos paths
     watchPathIgnorePatterns: ['<rootDir>/.postgres-data'],
     modulePathIgnorePatterns: ['<rootDir>/.postgres-data'],
-}
 
+    // necessário para Jest 30 + ESM
+    moduleNameMapper: {
+        '^(\\.{1,2}/.*)\\.js$': '$1.js',
+    },
+}

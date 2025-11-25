@@ -2,10 +2,10 @@ import {
     serverError,
     checkIfIdIsValid,
     invalidIdResponse,
-    ok,
     userNotFoundResponse,
+    noContent, // <--- importar aqui
 } from '../helpers/index.js'
-import { UserNotFoundError } from '../../errors/user.js' // << classe de erro
+import { UserNotFoundError } from '../../errors/user.js'
 
 export class DeleteUserController {
     constructor(deleteUserUseCase) {
@@ -16,18 +16,19 @@ export class DeleteUserController {
         try {
             const userId = httpRequest?.params?.userId
             const isValid = checkIfIdIsValid(userId)
+
             if (!isValid) {
                 return invalidIdResponse()
             }
 
             const deletedUser = await this.deleteUserUseCase.execute(userId)
 
-            // caso o use case "resolva" com um erro (como no teste)
             if (deletedUser instanceof UserNotFoundError) {
                 return userNotFoundResponse()
             }
 
-            return ok(deletedUser)
+            // 🚀 CORREÇÃO AQUI → retorno correto do DELETE
+            return noContent() // 204, body = null
         } catch (error) {
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()

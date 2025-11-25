@@ -2,6 +2,11 @@ export const badRequest = (body) => ({
     statusCode: 400,
     body,
 })
+export const noContent = () => ({
+    statusCode: 204,
+    body: null,
+})
+
 export const unauthorized = () => ({
     statusCode: 401,
     body: { message: 'Unauthorized' },

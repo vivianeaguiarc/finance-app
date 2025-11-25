@@ -29,7 +29,7 @@ describe('Delete User Controller', () => {
         const { sut } = makeSut()
 
         const result = await sut.execute(httpRequest)
-        expect(result.statusCode).toBe(200)
+        expect(result.statusCode).toBe(204)
     })
 
     it('shoult return 400 if id is invalid ', async () => {
