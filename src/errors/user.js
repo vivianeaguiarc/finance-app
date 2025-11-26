@@ -22,3 +22,9 @@ export class ForbiddenError extends Error {
         this.name = 'ForbiddenError'
     }
 }
+export class UnauthorizedError extends Error {
+    constructor() {
+        super(`You must be logged in to perform this action.`)
+        this.name = 'UnauthorizedError'
+    }
+}
