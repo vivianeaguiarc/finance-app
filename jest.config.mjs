@@ -6,10 +6,8 @@ export default {
 
     moduleFileExtensions: ['js', 'json'],
 
-    // carrega variáveis de ambiente
     setupFiles: ['dotenv/config'],
 
-    // carrega o setup que remove console.error vermelho
     setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
 
     testMatch: ['**/*.test.js'],
@@ -33,8 +31,4 @@ export default {
     watchPathIgnorePatterns: ['<rootDir>/.postgres-data'],
     modulePathIgnorePatterns: ['<rootDir>/.postgres-data'],
 
-    // necessário para Jest 30 + ESM
-    moduleNameMapper: {
-        '^(\\.{1,2}/.*)\\.js$': '$1.js',
-    },
 }
