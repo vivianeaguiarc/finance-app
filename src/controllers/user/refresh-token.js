@@ -2,7 +2,7 @@ import { UnauthorizedError } from '../../errors/index.js'
 import { ok, serverError } from '../helpers/index.js'
 import { refreshTokenSchema } from '../../schemas/index.js'
 import { ZodError } from 'zod'
-import { badRequest } from '../helpers/index.js'
+import { badRequest, unauthorized } from '../helpers/index.js'
 
 export class RefreshTokenController {
     constructor(refreshTokenUseCase) {
