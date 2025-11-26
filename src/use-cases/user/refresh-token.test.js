@@ -3,7 +3,7 @@ import { RefreshTokenUseCase } from './refresh-token.js'
 
 describe('Refresh Token Use Case', () => {
     class TokenVerifierAdapterStub {
-        execute() {
+        async execute() {
             return { userId: 'any_user_id' }
         }
     }
@@ -29,25 +29,28 @@ describe('Refresh Token Use Case', () => {
         return { sut, tokenVerifierAdapter, tokensGeneratorAdapter }
     }
 
-    it('should return new tokens', () => {
+    it('should return new tokens', async () => {
         const { sut } = makeSut()
 
-        const result = sut.execute('any_refresh_token')
+        const result = await sut.execute('any_refresh_token')
 
         expect(result).toEqual({
             accessToken: 'any_access_token',
             refreshToken: 'any_refresh_token',
         })
     })
-    it('should throw if tokenVerifierAdapter throws', () => {
+
+    it('should throw if tokenVerifierAdapter throws', async () => {
         const { sut, tokenVerifierAdapter } = makeSut()
+
         import.meta.jest
             .spyOn(tokenVerifierAdapter, 'execute')
             .mockImplementationOnce(() => {
                 throw new Error()
             })
-        expect(() => sut.execute('any_refresh_token')).toThrow(
-            new UnauthorizedError(),
+
+        await expect(sut.execute('any_refresh_token')).rejects.toThrow(
+            UnauthorizedError,
         )
     })
 })
