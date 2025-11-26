@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '../../errors/user.js'
+import { UnauthorizedError } from '../../errors/index.js'
 import { RefreshTokenUseCase } from './refresh-token.js'
 
 describe('Refresh Token Use Case', () => {
