@@ -12,12 +12,9 @@ import { faker } from '@faker-js/faker'
  *  3. Usa o token nas rotas protegidas /transactions
  */
 describe('Transaction Routes E2E Tests (Organizado)', () => {
-    /**
-     * Fluxo auxiliar para criar um usuário e realizar login.
-     * Retorna:
-     *  - usuário criado
-     *  - token JWT de acesso
-     */
+    const from = '2023-01-01T00:00:00.000Z'
+    const to = '2023-12-31T23:59:59.999Z'
+
     const createAndLogin = async () => {
         // 1. Criar usuário
         const { body: createdUser } = await request(app)
@@ -54,6 +51,26 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         expect(response.body.user_id).toBe(createdUser.id)
         expect(response.body.amount).toBe(String(transaction.amount))
         expect(response.body.type).toBe(transaction.type)
+    })
+    it('GET /api/transaction?userId should return 200 when fetching transactions successfully', async () => {
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({ ...user, id: undefined })
+
+        const { body: createdTransaction } = await request(app)
+            .post('/api/transactions')
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .send({ ...transaction, id: undefined, user_id: createdUser.id })
+
+        const response = await request(app)
+            .get(`/api/transactions?from=${from}&to=${to}`)
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .query({ userId: createdUser.id })
+
+        expect(response.status).toBe(200)
+        expect(Array.isArray(response.body)).toBe(true)
+        expect(response.body.length).toBeGreaterThan(0)
+        expect(response.body[0].id).toBe(createdTransaction.id)
     })
 
     /**
