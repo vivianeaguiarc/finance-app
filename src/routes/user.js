@@ -43,6 +43,7 @@ usersRouter.get('/', auth, async (req, res) => {
     const { statusCode, body } = await controller.execute({
         ...req,
         params: { userId: req.userId },
+        query: { from: req.query.from, to: req.query.to },
     })
     res.status(statusCode).send(body)
 })
