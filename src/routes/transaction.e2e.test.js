@@ -3,25 +3,14 @@ import request from 'supertest'
 import { transaction, user } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
 
-/**
- * E2E – Testes completos do fluxo de Transações
- * -------------------------------------------------
- * Cada teste:
- *  1. Cria um usuário
- *  2. Faz login para obter token
- *  3. Usa o token nas rotas protegidas /transactions
- */
 describe('Transaction Routes E2E Tests (Organizado)', () => {
     const from = '2023-01-01T00:00:00.000Z'
     const to = '2023-12-31T23:59:59.999Z'
 
     const createAndLogin = async () => {
-        // 1. Criar usuário
         const { body: createdUser } = await request(app)
             .post('/api/users')
             .send({ ...user, id: undefined })
-
-        // 2. Login com as mesmas credenciais
         const loginRes = await request(app).post('/api/users/login').send({
             email: user.email,
             password: user.password,
@@ -32,10 +21,6 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
             token: loginRes.body.tokens.accessToken,
         }
     }
-
-    /**
-     * 1) Criar transação
-     */
     it('POST /api/transactions → should return 201 when created', async () => {
         const { user: createdUser, token } = await createAndLogin()
 
@@ -60,7 +45,12 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         const { body: createdTransaction } = await request(app)
             .post('/api/transactions')
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
-            .send({ ...transaction, id: undefined, user_id: createdUser.id })
+            .send({
+                ...transaction,
+                date: new Date(from),
+                id: undefined,
+                user_id: createdUser.id,
+            })
 
         const response = await request(app)
             .get(`/api/transactions?from=${from}&to=${to}`)
@@ -72,10 +62,6 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         expect(response.body.length).toBeGreaterThan(0)
         expect(response.body[0].id).toBe(createdTransaction.id)
     })
-
-    /**
-     * 2) Buscar transações do usuário autenticado
-     */
     it('GET /api/transactions → should return 200 and a list', async () => {
         const { token } = await createAndLogin()
 
@@ -95,9 +81,6 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         expect(response.body.length).toBeGreaterThan(0)
     })
 
-    /**
-     * 3) Atualizar transação existente
-     */
     it('PATCH /api/transactions/:id → should update and return 200', async () => {
         const { token } = await createAndLogin()
 
@@ -114,7 +97,6 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
             date: new Date().toISOString(),
         }
 
-        // atualiza transação
         const response = await request(app)
             .patch(`/api/transactions/${createdTransaction.id}`)
             .set('Authorization', `Bearer ${token}`)
@@ -126,9 +108,6 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         expect(response.body.type).toBe(updatePayload.type)
     })
 
-    /**
-     * 4) Deletar transação pelo ID
-     */
     it('DELETE /api/transactions/:id → should return 200', async () => {
         const { token } = await createAndLogin()
 

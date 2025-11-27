@@ -6,6 +6,7 @@ dayjs.extend(utc)
 import { transaction, user } from '../../../tests/fixtures/index.js'
 import { PostgresDeleteTransactionRepository } from './delete-transaction.js'
 import { TransactionNotFoundError } from '../../../errors/index.js' // Importar o erro
+import { PostgresGetTransactionsByUserIdRepository } from './get-transaction-by-user-id.js'
 
 // Função de setup (para evitar repetição e garantir consistência)
 const setupTransaction = async () => {
@@ -18,7 +19,49 @@ const setupTransaction = async () => {
 }
 
 describe('PostgresDeleteTransactionRepository', () => {
+    const from = '2023-01-01'
+    const to = '2024-12-31'
+
     // 1. Deve deletar uma transação com sucesso
+    it('should get transaction by user id on db', async () => {
+        const date = '2023-06-15T12:00:00Z'
+        const sut = new PostgresGetTransactionsByUserIdRepository()
+        await prisma.user.create({ data: user })
+        await prisma.transaction.create({
+            data: { ...transaction, date, user_id: user.id },
+        })
+
+        const result = await sut.execute(user.id, from, to)
+
+        expect(result.length).toBe(1)
+        expect(result[0].name).toBe(transaction.name)
+        expect(result[0].amount.toString()).toBe(transaction.amount.toString())
+        expect(result[0].type).toBe(transaction.type)
+        expect(result[0].user_id).toBe(user.id)
+
+        expect(dayjs(result[0].date).daysInMonth()).toBe(
+            dayjs(date).daysInMonth(),
+        )
+
+        expect(dayjs(result[0].date).month()).toBe(dayjs(date).month())
+
+        expect(dayjs(result[0].date).year()).toBe(dayjs(date).year())
+    })
+    it('should call Prisma with correct params', async () => {
+        const sut = new PostgresGetTransactionsByUserIdRepository()
+        const prismaSpy = import.meta.jest.spyOn(prisma.transaction, 'findMany')
+        await sut.execute(user.id, from, to)
+
+        expect(prismaSpy).toHaveBeenCalledWith({
+            where: {
+                user_id: user.id,
+                date: {
+                    gte: from,
+                    lte: to,
+                },
+            },
+        })
+    })
     it('should delete a user transaction successfully', async () => {
         const txDate = await setupTransaction() // Chama a função de setup
 
