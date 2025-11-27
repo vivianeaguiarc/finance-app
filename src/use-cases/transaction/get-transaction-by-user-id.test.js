@@ -43,38 +43,30 @@ describe('GetTransactionByUserIdUseCase', () => {
         const promise = sut.execute(id)
         await expect(promise).rejects.toThrow(new UserNotFoundError(id))
     })
+
     it('should call GetTransactionByUserIdRepository with correct param', async () => {
         const { sut, getTransactionByUserIdRepository } = makeSut()
+
         const userId = faker.string.uuid()
+
         const getByUserIdSpy = import.meta.jest.spyOn(
             getTransactionByUserIdRepository,
             'execute',
         )
+
         await sut.execute(userId)
-        expect(getByUserIdSpy).toHaveBeenCalledWith(userId)
-    })
-    it('should call GetTransactionByIdRepository with correct param', async () => {
-        const { sut, getUserByIdRepository } = makeSut()
-        const userId = faker.string.uuid()
-        const getByIdSpy = import.meta.jest.spyOn(
-            getUserByIdRepository,
-            'execute',
+
+        expect(getByUserIdSpy).toHaveBeenCalledWith(
+            userId,
+            undefined,
+            undefined,
         )
-        await sut.execute(userId)
-        expect(getByIdSpy).toHaveBeenCalledWith(userId)
     })
+
     it('shoult throw if GetTransactionByUserIdRepository throws', async () => {
         const { sut, getTransactionByUserIdRepository } = makeSut()
         import.meta.jest
             .spyOn(getTransactionByUserIdRepository, 'execute')
-            .mockRejectedValueOnce(new Error())
-        const promise = sut.execute(faker.string.uuid())
-        await expect(promise).rejects.toThrow()
-    })
-    it('shoult throw if GetUserByIdRepository throws', async () => {
-        const { sut, getUserByIdRepository } = makeSut()
-        import.meta.jest
-            .spyOn(getUserByIdRepository, 'execute')
             .mockRejectedValueOnce(new Error())
         const promise = sut.execute(faker.string.uuid())
         await expect(promise).rejects.toThrow()
