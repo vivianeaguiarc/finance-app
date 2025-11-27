@@ -31,3 +31,8 @@ export const refreshTokenSchema = z.object({
         .trim()
         .min(1, { message: 'Refresh token is required' }),
 })
+export const getUserBalanceSchema = z.object({
+    userId: z.string().uuid({ message: 'Invalid user ID' }),
+    from: z.string().optional(),
+    to: z.string().optional(),
+})

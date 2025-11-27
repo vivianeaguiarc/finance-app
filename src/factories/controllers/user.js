@@ -45,6 +45,7 @@ export const makeCreateUserController = () => {
     const idGeneratorAdapter = new IdGeneratorAdapter()
     const tokenGeneratorAdapter = new TokensGeneratorAdapter()
     const createUserRepository = new PostgresCreateUserRepository()
+
     const createUserUseCase = new CreateUserUseCase(
         getUserByEmailRepository,
         createUserRepository,
@@ -52,9 +53,13 @@ export const makeCreateUserController = () => {
         idGeneratorAdapter,
         tokenGeneratorAdapter,
     )
-    const createUserController = new CreateUserController(createUserUseCase)
+    const createUserController = new CreateUserController(
+        createUserUseCase,
+        tokenGeneratorAdapter,
+    )
     return createUserController
 }
+
 export const makeUpdateUserController = () => {
     const getUserByEmailRepository = new PostgresGetUserByEmailRepository()
     const updateUserRepository = new PostgresUpdateUserRepository()

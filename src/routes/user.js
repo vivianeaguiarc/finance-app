@@ -53,6 +53,7 @@ usersRouter.get('/balance', auth, async (req, res) => {
     const { statusCode, body } = await controller.execute({
         ...req,
         params: { userId: req.userId },
+        query: req.query,
     })
     res.status(statusCode).send(body)
 })

@@ -15,7 +15,7 @@ export class CreateUserController {
         } catch (error) {
             if (error instanceof ZodError) {
                 return badRequest({
-                    message: error.issues[0].message,
+                    message: error.message,
                 })
             }
             if (error instanceof EmailAlreadyInUseError) {
