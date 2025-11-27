@@ -16,10 +16,10 @@ transactionsRouter.get('/', auth, async (request, response) => {
     const { statusCode, body } =
         await getTransactionsByUserIdController.execute({
             ...request,
-            query: request.query,
-            from: request.query.from,
-            to: request.query.to,
-            userId: request.userId,
+            query: {
+                ...request.query,
+                user_id: request.userId,
+            },
         })
     response.status(statusCode).send(body)
 })

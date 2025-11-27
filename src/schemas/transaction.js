@@ -45,7 +45,7 @@ export const updateTransactionSchema = createdTransactionSchema
     })
 
 export const getTransactionsByUserIdSchema = z.object({
-    userId: z.string().uuid(),
+    userId: z.string().uuid({ message: 'userId must be a valid UUID' }),
     from: z.string().optional(),
     to: z.string().optional(),
 })
