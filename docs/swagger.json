@@ -14,11 +14,9 @@
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-            "description": "Enter: Bearer {token}"
+            "description": "Use this format: **Bearer <your_token>**"
         }
     },
-
-    "security": [{ "BearerAuth": [] }],
 
     "paths": {
         "/api/users": {
@@ -100,7 +98,7 @@
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Tokens refreshed successfully",
                         "schema": { "$ref": "#/definitions/Tokens" }
                     },
@@ -124,6 +122,7 @@
             "get": {
                 "summary": "Get authenticated user",
                 "tags": ["User"],
+                "security": [{ "BearerAuth": [] }],
                 "responses": {
                     "200": {
                         "description": "User found",
@@ -146,6 +145,7 @@
             "patch": {
                 "summary": "Update authenticated user",
                 "tags": ["User"],
+                "security": [{ "BearerAuth": [] }],
                 "parameters": [
                     {
                         "in": "body",
@@ -182,6 +182,7 @@
             "delete": {
                 "summary": "Delete authenticated user",
                 "tags": ["User"],
+                "security": [{ "BearerAuth": [] }],
                 "responses": {
                     "200": {
                         "description": "User deleted",
@@ -207,6 +208,7 @@
             "get": {
                 "summary": "Get authenticated user balance",
                 "tags": ["User"],
+                "security": [{ "BearerAuth": [] }],
                 "parameters": [
                     {
                         "in": "query",
@@ -248,6 +250,7 @@
             "get": {
                 "summary": "Get authenticated user transactions",
                 "tags": ["Transaction"],
+                "security": [{ "BearerAuth": [] }],
                 "parameters": [
                     {
                         "name": "from",
@@ -289,6 +292,7 @@
             "post": {
                 "summary": "Create transaction",
                 "tags": ["Transaction"],
+                "security": [{ "BearerAuth": [] }],
                 "parameters": [
                     {
                         "in": "body",
@@ -314,77 +318,6 @@
                         "description": "User not found",
                         "schema": {
                             "$ref": "#/definitions/UserNotFoundResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/InternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-
-        "/api/transactions/me/{transactionId}": {
-            "patch": {
-                "summary": "Update authenticated user's transaction",
-                "tags": ["Transaction"],
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "transactionId",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/UpdateTransactionParams"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Transaction updated",
-                        "schema": { "$ref": "#/definitions/Transaction" }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/TransactionNotFoundResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/InternalServerErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "summary": "Delete authenticated user's transaction",
-                "tags": ["Transaction"],
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "transactionId",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Deleted",
-                        "schema": { "$ref": "#/definitions/Transaction" }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "schema": {
-                            "$ref": "#/definitions/TransactionNotFoundResponse"
                         }
                     },
                     "500": {
