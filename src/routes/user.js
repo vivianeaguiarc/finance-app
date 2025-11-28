@@ -38,7 +38,7 @@ usersRouter.post('/refresh-token', async (req, res) => {
 // ROTAS PROTEGIDAS (COM AUTH)
 // ------------------------
 
-usersRouter.get('/', auth, async (req, res) => {
+usersRouter.get('/me', auth, async (req, res) => {
     const controller = makeGetUserByIdController()
     const { statusCode, body } = await controller.execute({
         ...req,
@@ -48,7 +48,7 @@ usersRouter.get('/', auth, async (req, res) => {
     res.status(statusCode).send(body)
 })
 
-usersRouter.get('/balance', auth, async (req, res) => {
+usersRouter.get('/me/balance', auth, async (req, res) => {
     const controller = makeGetUserBalanceController()
     const { statusCode, body } = await controller.execute({
         ...req,
@@ -58,7 +58,7 @@ usersRouter.get('/balance', auth, async (req, res) => {
     res.status(statusCode).send(body)
 })
 
-usersRouter.patch('/', auth, async (req, res) => {
+usersRouter.patch('/me', auth, async (req, res) => {
     const controller = makeUpdateUserController()
     const { statusCode, body } = await controller.execute({
         ...req,
@@ -67,7 +67,7 @@ usersRouter.patch('/', auth, async (req, res) => {
     res.status(statusCode).send(body)
 })
 
-usersRouter.delete('/', auth, async (req, res) => {
+usersRouter.delete('/me', auth, async (req, res) => {
     const controller = makeDeleteUserController()
     const { statusCode, body } = await controller.execute({
         ...req,

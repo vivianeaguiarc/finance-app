@@ -33,6 +33,6 @@ export const refreshTokenSchema = z.object({
 })
 export const getUserBalanceSchema = z.object({
     userId: z.string().uuid({ message: 'Invalid user ID' }),
-    from: z.string().optional(),
-    to: z.string().optional(),
+    from: z.string().min(1, 'from is required'),
+    to: z.string().min(1, 'to is required'),
 })
