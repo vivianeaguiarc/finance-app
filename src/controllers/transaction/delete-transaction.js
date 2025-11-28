@@ -13,14 +13,18 @@ export class DeleteTransactionController {
     }
     async execute(httpRequest) {
         try {
-            const isIsValid = checkIfIdIsValid(httpRequest.params.transactionId)
-            if (!isIsValid) {
+            const transactionId = httpRequest.params.transactionId
+            const userId = httpRequest.params.user_id
+
+            const trnsactionIdIsvalid = checkIfIdIsValid(transactionId)
+            const userIdIsvalid = checkIfIdIsValid(userId)
+            if (!trnsactionIdIsvalid || !userIdIsvalid) {
                 return invalidIdResponse()
             }
             const deletedTransaction =
                 await this.deleteTransactionUseCase.execute(
-                    httpRequest.params.transactionId,
-                    httpRequest.params.user_id,
+                    transactionId,
+                    userId,
                 )
             return ok(deletedTransaction)
         } catch (error) {
