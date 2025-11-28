@@ -1,9 +1,12 @@
 import { prisma } from '../../../../prisma/prisma.js'
 
-export class PostgresTransactionGetByIdRepository {
-    async execute(transactionId) {
-        return await prisma.transaction.findUnique({
-            where: { id: transactionId },
+export class PostgresGetTransactionByIdRepository {
+    async execute(transactionId, userId) {
+        return await prisma.transaction.findFirst({
+            where: {
+                id: transactionId,
+                user_id: userId,
+            },
         })
     }
 }
