@@ -91,8 +91,8 @@ transactionsRouter.delete(
         const { statusCode, body } = await controller.execute({
             ...request,
             params: {
-                ...request.params,
-                userId: request.userId,
+                transactionId: request.params.transactionId,
+                user_id: request.userId,
             },
         })
 
