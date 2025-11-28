@@ -3,30 +3,32 @@ import request from 'supertest'
 import { transaction, user } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
 
-describe('Transaction Routes E2E Tests (Organizado)', () => {
+describe('Transaction Routes E2E Tests (com /me)', () => {
     const from = '2023-01-01T00:00:00.000Z'
     const to = '2023-12-31T23:59:59.999Z'
 
-    const createAndLogin = async () => {
+    // helper robusto
+    const createUserAndLogin = async () => {
+        const email = faker.internet.email()
+
+        // cria usuário válido
         const { body: createdUser } = await request(app)
             .post('/api/users')
-            .send({ ...user, id: undefined })
-        const loginRes = await request(app).post('/api/users/login').send({
-            email: user.email,
-            password: user.password,
-        })
+            .send({ ...user, id: undefined, email })
 
         return {
             user: createdUser,
-            token: loginRes.body.tokens.accessToken,
+            token: createdUser.tokens.accessToken,
         }
     }
-    it('POST /api/transactions → should return 201 when created', async () => {
-        const { user: createdUser, token } = await createAndLogin()
+
+    // -------------------------------------------------------------
+    it('POST /api/transactions/me → should create transaction (201)', async () => {
+        const { user: createdUser, token } = await createUserAndLogin()
 
         const response = await request(app)
-            .post('/api/transactions')
-            .set('Authorization', `Bearer ${token}`) // rota protegida
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 ...transaction,
                 id: undefined,
@@ -37,58 +39,44 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         expect(response.body.amount).toBe(String(transaction.amount))
         expect(response.body.type).toBe(transaction.type)
     })
-    it('GET /api/transaction?userId should return 200 when fetching transactions successfully', async () => {
-        const { body: createdUser } = await request(app)
-            .post('/api/users')
-            .send({ ...user, id: undefined })
 
+    // -------------------------------------------------------------
+    it('GET /api/transactions/me → should return only user transactions (200)', async () => {
+        const { user: createdUser, token } = await createUserAndLogin()
+
+        // cria transação
         const { body: createdTransaction } = await request(app)
-            .post('/api/transactions')
-            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 ...transaction,
                 date: new Date(from),
                 id: undefined,
-                user_id: createdUser.id,
             })
 
+        // busca
         const response = await request(app)
-            .get(`/api/transactions?from=${from}&to=${to}`)
-            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
-            .query({ userId: createdUser.id })
+            .get(`/api/transactions/me`)
+            .set('Authorization', `Bearer ${token}`)
+            .query({ from, to })
 
         expect(response.status).toBe(200)
         expect(Array.isArray(response.body)).toBe(true)
         expect(response.body.length).toBeGreaterThan(0)
         expect(response.body[0].id).toBe(createdTransaction.id)
     })
-    it('GET /api/transactions → should return 200 and a list', async () => {
-        const { token } = await createAndLogin()
 
-        // cria uma transação antes da busca
-        await request(app)
-            .post('/api/transactions')
-            .set('Authorization', `Bearer ${token}`)
-            .send({ ...transaction, id: undefined })
+    // -------------------------------------------------------------
+    it('PATCH /api/transactions/me/:id → should update (200)', async () => {
+        const { token } = await createUserAndLogin()
 
-        // busca todas
-        const response = await request(app)
-            .get('/api/transactions')
-            .set('Authorization', `Bearer ${token}`)
-
-        expect(response.status).toBe(200)
-        expect(Array.isArray(response.body)).toBe(true)
-        expect(response.body.length).toBeGreaterThan(0)
-    })
-
-    it('PATCH /api/transactions/:id → should update and return 200', async () => {
-        const { token } = await createAndLogin()
-
-        // cria transação inicial
         const { body: createdTransaction } = await request(app)
-            .post('/api/transactions')
+            .post('/api/transactions/me')
             .set('Authorization', `Bearer ${token}`)
-            .send({ ...transaction, id: undefined })
+            .send({
+                ...transaction,
+                id: undefined,
+            })
 
         const updatePayload = {
             name: faker.commerce.productName(),
@@ -98,7 +86,7 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         }
 
         const response = await request(app)
-            .patch(`/api/transactions/${createdTransaction.id}`)
+            .patch(`/api/transactions/me/${createdTransaction.id}`)
             .set('Authorization', `Bearer ${token}`)
             .send(updatePayload)
 
@@ -108,19 +96,37 @@ describe('Transaction Routes E2E Tests (Organizado)', () => {
         expect(response.body.type).toBe(updatePayload.type)
     })
 
-    it('DELETE /api/transactions/:id → should return 200', async () => {
-        const { token } = await createAndLogin()
+    // -------------------------------------------------------------
+    it('DELETE /api/transactions/me/:id → should return 200', async () => {
+        const { token } = await createUserAndLogin()
 
-        // cria transação para deletar
         const { body: createdTransaction } = await request(app)
-            .post('/api/transactions')
+            .post('/api/transactions/me')
             .set('Authorization', `Bearer ${token}`)
             .send({ ...transaction, id: undefined })
 
         const response = await request(app)
-            .delete(`/api/transactions/${createdTransaction.id}`)
+            .delete(`/api/transactions/me/${createdTransaction.id}`)
             .set('Authorization', `Bearer ${token}`)
 
         expect(response.status).toBe(200)
+    })
+
+    // -------------------------------------------------------------
+    it('GET /api/transactions (sem /me) → should return 200 list', async () => {
+        const { token } = await createUserAndLogin()
+
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ ...transaction, id: undefined })
+
+        const response = await request(app)
+            .get('/api/transactions')
+            .set('Authorization', `Bearer ${token}`)
+
+        expect(response.status).toBe(200)
+        expect(Array.isArray(response.body)).toBe(true)
+        expect(response.body.length).toBeGreaterThan(0)
     })
 })

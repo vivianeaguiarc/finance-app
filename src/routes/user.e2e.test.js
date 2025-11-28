@@ -2,6 +2,7 @@ import { app } from '../app.js'
 import request from 'supertest'
 import { user } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
+import { TransactionType } from '@prisma/client'
 
 // Helper para criar usuário único em cada teste
 const createUser = async () => {
@@ -39,11 +40,11 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('GET /api/users → should return 200 when user is found', async () => {
+    it('GET /api/users/me → should return 200 when if user is authenticated', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
-            .get(`/api/users`)
+            .get(`/api/users/me`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(200)
@@ -51,7 +52,7 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('PATCH /api/users → should update user and return 200', async () => {
+    it('PATCH /api/users/me → should update user and return 200', async () => {
         const createdUser = await createUser()
 
         const update = {
@@ -62,7 +63,7 @@ describe('User Routes E2E Tests', () => {
         }
 
         const res = await request(app)
-            .patch(`/api/users`)
+            .patch(`/api/users/me`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
             .send(update)
 
@@ -88,11 +89,11 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('DELETE /api/users → should return 204 when user is deleted', async () => {
+    it('DELETE /api/users/me → should return 204 when user is deleted', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
-            .delete(`/api/users`)
+            .delete(`/api/users/me`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(204)
@@ -100,11 +101,11 @@ describe('User Routes E2E Tests', () => {
     })
 
     // -----------------------------------------------------------------------------
-    it('GET /api/users/balance → should return 200 and balance object', async () => {
+    it('GET /api/users/me/balance → should return 200 and balance object', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
-            .get(`/api/users/balance`)
+            .get(`/api/users/me/balance`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
             .query({ from, to }) //  <<<<<<<<<< OBRIGATÓRIO AGORA
 
@@ -112,7 +113,63 @@ describe('User Routes E2E Tests', () => {
         expect(res.body).toHaveProperty('balance')
         expect(typeof Number(res.body.balance)).toBe('number')
     })
+    // -----------------------------------------------------------------------------
+    it('GET /api/users/me/balance should return 200 and correct balance', async () => {
+        const { body: createdUser } = await request(app)
+            .post('/api/users')
+            .send({
+                ...user,
+                id: undefined,
+            })
 
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .send({
+                user_id: createdUser.id,
+                name: faker.commerce.productName(),
+                date: new Date(from),
+                type: TransactionType.EARNING,
+                amount: 10000,
+            })
+
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .send({
+                user_id: createdUser.id,
+                name: faker.commerce.productName(),
+                date: new Date(from),
+                type: TransactionType.EXPENSE,
+                amount: 2000,
+            })
+
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+            .send({
+                user_id: createdUser.id,
+                name: faker.commerce.productName(),
+                date: new Date(to),
+                type: TransactionType.INVESTMENT,
+                amount: 2000,
+            })
+
+        const response = await request(app)
+            .get(`/api/users/me/balance?from=${from}&to=${to}`)
+            .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
+
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+            earnings: '10000',
+            expenses: '2000',
+            investments: '2000',
+            balance: '6000',
+            earningsPercentage: '71',
+            expensesPercentage: '14',
+            investmentsPercentage: '14',
+        })
+    })
     // -----------------------------------------------------------------------------
     it('POST /api/users/refresh-token → should return 200 and new tokens', async () => {
         const { body: createdUser } = await request(app)
