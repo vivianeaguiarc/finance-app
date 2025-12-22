@@ -5,7 +5,7 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-       "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+        "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
         "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
         "coverage": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --passWithNoTests --coverage",
         "prepare": "husky install",
@@ -50,6 +50,7 @@
         "bcrypt": "^6.0.0",
         "bcryptjs": "^3.0.3",
         "chalk": "^5.6.2",
+        "cors": "^2.8.5",
         "dayjs": "^1.11.19",
         "dotenv": "^17.2.3",
         "express": "^5.1.0",
