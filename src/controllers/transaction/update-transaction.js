@@ -12,13 +12,16 @@ export class UpdateTransactionController {
             if (!idIsValid) {
                 return invalidIdResponse()
             }
-            const params = httpRequest.body
+            // refatorado aqui
+            const { user_id, ...params } = httpRequest.body
+
             await updateTransactionSchema.parseAsync(params)
 
             const transaction = await this.updateTransactionUseCase.execute(
                 httpRequest.params.transactionId,
-                params,
+                { ...params, user_id },
             )
+            // refatorado aqui
             return ok(transaction)
         } catch (error) {
             if (error?.issues) {
