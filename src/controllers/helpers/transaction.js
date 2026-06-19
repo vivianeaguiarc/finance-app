@@ -1,7 +1,4 @@
 import { notFound } from './http.js'
 
-export const transactionNotFoundResponse = () => {
-    return notFound({
-        message: 'Transaction not found.',
-    })
-}
+export const transactionNotFoundResponse = () =>
+    notFound('Transaction not found.', 'TRANSACTION_NOT_FOUND')

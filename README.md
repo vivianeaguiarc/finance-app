@@ -34,6 +34,47 @@ Projeto de portfólio com arquitetura em camadas (controllers, use-cases, reposi
 - Helmet para headers HTTP de segurança
 - Rate limit global + rate limit reforçado em rotas de auth
 - Delete de transações filtrado por `user_id` (403 se não for dono, 404 se não existir)
+- Respostas padronizadas `{ success, message, data }` e erros `{ success, message, code }`
+
+---
+
+## 📦 Contrato da API
+
+### Sucesso (200/201)
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {}
+}
+```
+
+### Erro (4xx/5xx)
+
+```json
+{
+  "success": false,
+  "message": "Resource not found.",
+  "code": "NOT_FOUND"
+}
+```
+
+### Status HTTP comuns
+
+| Status | Uso |
+|--------|-----|
+| 200 | Leitura/atualização com sucesso |
+| 201 | Criação |
+| 204 | Delete sem body |
+| 400 | Validação |
+| 401 | Não autenticado |
+| 403 | Sem permissão |
+| 404 | Recurso inexistente |
+| 409 | Conflito (ex.: e-mail duplicado) |
+| 429 | Rate limit |
+
+> **Breaking change:** versões anteriores retornavam o recurso diretamente no body. Agora os dados ficam em `data`.
 
 ---
 

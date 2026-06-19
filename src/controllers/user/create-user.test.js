@@ -33,15 +33,19 @@ describe('Create User Controller', () => {
         const { sut } = makeSut()
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(201)
-        expect(result.body.password).toBeUndefined()
+        expect(result.body.data?.password).toBeUndefined()
         expect(result.body).toMatchObject({
-            id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            tokens: {
-                accessToken: 'access-token',
-                refreshToken: 'refresh-token',
+            success: true,
+            message: 'User created successfully',
+            data: {
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
+                tokens: {
+                    accessToken: 'access-token',
+                    refreshToken: 'refresh-token',
+                },
             },
         })
     })
@@ -122,6 +126,7 @@ describe('Create User Controller', () => {
 
         const result = await sut.execute(httpRequest)
 
-        expect(result.statusCode).toBe(400)
+        expect(result.statusCode).toBe(409)
+        expect(result.body.code).toBe('EMAIL_ALREADY_IN_USE')
     })
 })

@@ -98,7 +98,8 @@ describe('UpdateUserController', () => {
             .mockRejectedValueOnce(new EmailAlreadyInUseError())
 
         const result = await sut.execute(httpRequest)
-        expect(result.statusCode).toBe(400)
+        expect(result.statusCode).toBe(409)
+        expect(result.body.code).toBe('EMAIL_ALREADY_IN_USE')
     })
 
     it('should call UpdateUserUseCase with correct values', async () => {

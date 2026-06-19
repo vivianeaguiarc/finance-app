@@ -30,7 +30,11 @@ describe('Delete Transaction Controller', () => {
         })
 
         expect(response.statusCode).toBe(200)
-        expect(response.body).toEqual(transaction)
+        expect(response.body).toEqual({
+            success: true,
+            message: 'Transaction deleted successfully',
+            data: transaction,
+        })
     })
 
     it('should return 400 when transactionId is invalid', async () => {

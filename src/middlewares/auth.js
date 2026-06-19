@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken'
+import { errorResponse } from '../controllers/helpers/http.js'
 
 export const auth = (request, response, next) => {
     try {
         const accessToken = request.headers?.authorization?.split('Bearer ')[1]
 
         if (!accessToken) {
-            return response.status(401).send({ error: 'Unauthorized' })
+            const { statusCode, body } = unauthorizedResponse()
+            return response.status(statusCode).json(body)
         }
 
         const decodedToken = jwt.verify(
@@ -14,12 +16,22 @@ export const auth = (request, response, next) => {
         )
 
         if (!decodedToken) {
-            return response.status(401).send({ error: 'Unauthorized' })
+            const { statusCode, body } = unauthorizedResponse()
+            return response.status(statusCode).json(body)
         }
 
         request.userId = decodedToken.userId
         next()
     } catch (error) {
-        return response.status(401).send({ error: 'Unauthorized' })
+        const { statusCode, body } = unauthorizedResponse()
+        return response.status(statusCode).json(body)
     }
+}
+
+function unauthorizedResponse() {
+    return errorResponse(
+        401,
+        'You must be logged in to perform this action.',
+        'UNAUTHORIZED',
+    )
 }

@@ -44,9 +44,7 @@ describe('GetUserBalanceUseCase', () => {
         const userId = faker.string.uuid()
         const promise = sut.execute(userId, from, to)
 
-        await expect(promise).rejects.toThrow(
-            `User with id ${userId} not found.`,
-        )
+        await expect(promise).rejects.toThrow('User not found.')
     })
     it('should call GetUserByIdRepository with correct params', async () => {
         const { sut, getUserByIdRepository } = makeSut()

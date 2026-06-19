@@ -1,5 +1,4 @@
-import { ok, serverError } from '../helpers/index.js'
-import { logInternalError } from '../../middlewares/error-handler.js'
+import { ok, mapErrorToHttpResponse } from '../helpers/index.js'
 
 export class GetTransactionBalanceController {
     constructor(getTransactionBalanceUseCase) {
@@ -11,10 +10,9 @@ export class GetTransactionBalanceController {
             const { userId } = httpRequest.params
             const result =
                 await this.getTransactionBalanceUseCase.execute(userId)
-            return ok(result)
+            return ok(result, 'Transaction balance retrieved successfully')
         } catch (error) {
-            logInternalError(error)
-            return serverError()
+            return mapErrorToHttpResponse(error)
         }
     }
 }

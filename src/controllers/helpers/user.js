@@ -1,7 +1,4 @@
 import { notFound } from './http.js'
 
-export const userNotFoundResponse = () => {
-    return notFound({
-        message: 'User not found.',
-    })
-}
+export const userNotFoundResponse = () =>
+    notFound('User not found.', 'USER_NOT_FOUND')

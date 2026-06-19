@@ -1,7 +1,10 @@
 import { updateTransactionSchema } from '../../schemas/transaction.js'
-import { checkIfIdIsValid, invalidIdResponse, ok } from '../helpers/index.js'
-import { TransactionNotFoundError } from '../../errors/index.js'
-import { logInternalError } from '../../middlewares/error-handler.js'
+import {
+    checkIfIdIsValid,
+    invalidIdResponse,
+    ok,
+    mapErrorToHttpResponse,
+} from '../helpers/index.js'
 
 export class UpdateTransactionController {
     constructor(updateTransactionUseCase) {
@@ -13,7 +16,7 @@ export class UpdateTransactionController {
             if (!idIsValid) {
                 return invalidIdResponse()
             }
-            // refatorado aqui
+
             const { user_id, ...params } = httpRequest.body
 
             await updateTransactionSchema.parseAsync(params)
@@ -22,31 +25,10 @@ export class UpdateTransactionController {
                 httpRequest.params.transactionId,
                 { ...params, user_id },
             )
-            // refatorado aqui
-            return ok(transaction)
+
+            return ok(transaction, 'Transaction updated successfully')
         } catch (error) {
-            if (error?.issues) {
-                return {
-                    statusCode: 400,
-                    body: { error: 'ValidationError', details: error.issues },
-                }
-            }
-
-            if (error instanceof TransactionNotFoundError) {
-                return {
-                    statusCode: 404,
-                    body: {
-                        error: 'TransactionNotFound',
-                        message: error.message,
-                    },
-                }
-            }
-
-            logInternalError(error)
-            return {
-                statusCode: 500,
-                body: { message: 'Internal server error' },
-            }
+            return mapErrorToHttpResponse(error)
         }
     }
 }

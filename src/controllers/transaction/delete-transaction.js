@@ -1,12 +1,9 @@
-import { TransactionNotFoundError } from '../../errors/transaction.js'
-import { ForbiddenError } from '../../errors/user.js'
 import {
     checkIfIdIsValid,
     invalidIdResponse,
     ok,
-    serverError,
-    transactionNotFoundResponse,
     forbidden,
+    mapErrorToHttpResponse,
 } from '../helpers/index.js'
 
 export class DeleteTransactionController {
@@ -23,23 +20,16 @@ export class DeleteTransactionController {
             if (!trnsactionIdIsvalid || !userIdIsvalid) {
                 return invalidIdResponse()
             }
+
             const deletedTransaction =
                 await this.deleteTransactionUseCase.execute(
                     transactionId,
                     userId,
                 )
-            return ok(deletedTransaction)
+
+            return ok(deletedTransaction, 'Transaction deleted successfully')
         } catch (error) {
-            if (error instanceof TransactionNotFoundError) {
-                return transactionNotFoundResponse()
-            }
-            if (error instanceof ForbiddenError) {
-                return forbidden()
-            }
-            if (process.env.NODE_ENV !== 'production') {
-                console.error(error)
-            }
-            return serverError()
+            return mapErrorToHttpResponse(error)
         }
     }
 }

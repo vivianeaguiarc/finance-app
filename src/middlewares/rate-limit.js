@@ -1,9 +1,11 @@
 import rateLimit from 'express-rate-limit'
+import { tooManyRequests } from '../controllers/helpers/http.js'
 
 const noopLimiter = (_req, _res, next) => next()
 
-const tooManyRequestsHandler = (message) => (_req, res) => {
-    res.status(429).json({ message })
+const tooManyRequestsHandler = (message, code) => (_req, res) => {
+    const { statusCode, body } = tooManyRequests(message, code)
+    res.status(statusCode).json(body)
 }
 
 export function createGlobalLimiter() {
@@ -14,6 +16,7 @@ export function createGlobalLimiter() {
         legacyHeaders: false,
         handler: tooManyRequestsHandler(
             'Too many requests, please try again later.',
+            'TOO_MANY_REQUESTS',
         ),
     })
 }
@@ -29,6 +32,7 @@ export function createAuthLimiter({
         legacyHeaders: false,
         handler: tooManyRequestsHandler(
             'Too many authentication attempts, please try again later.',
+            'TOO_MANY_REQUESTS',
         ),
     })
 }

@@ -21,8 +21,10 @@ describe('Rate limit middleware', () => {
         const response = await request(app).post('/login').send({}).expect(429)
 
         expect(response.body).toEqual({
+            success: false,
             message:
                 'Too many authentication attempts, please try again later.',
+            code: 'TOO_MANY_REQUESTS',
         })
     })
 })

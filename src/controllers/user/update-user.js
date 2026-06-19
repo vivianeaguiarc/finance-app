@@ -1,20 +1,12 @@
-import {
-    EmailAlreadyInUseError,
-    ForbiddenError,
-    UserNotFoundError,
-} from '../../errors/user.js'
 import { updatedUserSchema } from '../../schemas/user.js'
 import {
     checkIfIdIsValid,
     invalidIdResponse,
-    badRequest,
     ok,
-    serverError,
-    userNotFoundResponse,
     forbidden,
     sanitizeUser,
+    mapErrorToHttpResponse,
 } from '../helpers/index.js'
-import { ZodError } from 'zod'
 
 export class UpdateUserController {
     constructor(updateUserUseCase) {
@@ -35,7 +27,6 @@ export class UpdateUserController {
             }
 
             const params = httpRequest.body
-
             await updatedUserSchema.parseAsync(params)
 
             const updatedUser = await this.updateUserUseCase.execute(
@@ -43,32 +34,9 @@ export class UpdateUserController {
                 params,
             )
 
-            return ok(sanitizeUser(updatedUser))
+            return ok(sanitizeUser(updatedUser), 'User updated successfully')
         } catch (error) {
-            if (process.env.NODE_ENV !== 'production') {
-                console.error(error)
-            }
-
-            if (error instanceof ZodError) {
-                return badRequest({
-                    message: error.issues[0].message,
-                })
-            }
-
-            if (error instanceof EmailAlreadyInUseError) {
-                return badRequest({ message: error.message })
-            }
-            if (error instanceof ForbiddenError) {
-                return forbidden()
-            }
-
-            if (error instanceof UserNotFoundError) {
-                return userNotFoundResponse()
-            }
-
-            return serverError({
-                message: 'An unexpected error occurred.',
-            })
+            return mapErrorToHttpResponse(error)
         }
     }
 }

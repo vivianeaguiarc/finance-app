@@ -42,13 +42,17 @@ describe('GetUserBalanceController', () => {
 
         // ✔️ Ajustado para refletir retorno real do controller
         expect(httpResponse.body).toEqual({
-            earnings: 10000,
-            expenses: 2000,
-            investments: 3000,
-            balance: 5000,
-            earningsPercent: 62.5,
-            expensesPercent: 12.5,
-            investmentsPercent: 25,
+            success: true,
+            message: 'Balance retrieved successfully',
+            data: {
+                earnings: 10000,
+                expenses: 2000,
+                investments: 3000,
+                balance: 5000,
+                earningsPercent: 62.5,
+                expensesPercent: 12.5,
+                investmentsPercent: 25,
+            },
         })
     })
 

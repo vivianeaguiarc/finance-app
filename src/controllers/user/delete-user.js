@@ -1,10 +1,10 @@
 import {
-    serverError,
     checkIfIdIsValid,
     invalidIdResponse,
     userNotFoundResponse,
     noContent,
     forbidden,
+    mapErrorToHttpResponse,
 } from '../helpers/index.js'
 import { UserNotFoundError } from '../../errors/user.js'
 
@@ -33,10 +33,8 @@ export class DeleteUserController {
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()
             }
-            if (process.env.NODE_ENV !== 'production') {
-                console.error(error)
-            }
-            return serverError()
+
+            return mapErrorToHttpResponse(error)
         }
     }
 }

@@ -1,12 +1,7 @@
-import {
-    ok,
-    badRequest,
-    serverError,
-    userNotFoundResponse,
-    forbidden,
-} from '../helpers/index.js'
-import { ZodError } from 'zod'
 import { getUserBalanceSchema } from '../../schemas/index.js'
+import { ok, forbidden, mapErrorToHttpResponse } from '../helpers/index.js'
+import { UserNotFoundError } from '../../errors/user.js'
+import { userNotFoundResponse } from '../helpers/user.js'
 
 export class GetUserBalanceController {
     constructor(getUserBalanceUseCase) {
@@ -31,20 +26,13 @@ export class GetUserBalanceController {
                 to,
             )
 
-            return ok(balance)
+            return ok(balance, 'Balance retrieved successfully')
         } catch (error) {
-            if (error instanceof ZodError) {
-                return badRequest({ message: error.message })
-            }
-
-            if (error.name === 'UserNotFoundError') {
+            if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()
             }
 
-            if (process.env.NODE_ENV !== 'production') {
-                console.error(error)
-            }
-            return serverError()
+            return mapErrorToHttpResponse(error)
         }
     }
 }

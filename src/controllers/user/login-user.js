@@ -1,13 +1,10 @@
 import {
-    serverError,
     ok,
-    badRequest,
     unauthorized,
     sanitizeUserWithTokens,
+    mapErrorToHttpResponse,
 } from '../helpers/index.js'
-
 import { loginSchema } from '../../schemas/index.js'
-import { ZodError } from 'zod'
 import { InvalidPasswordError, UserNotFoundError } from '../../errors/user.js'
 
 export class LoginUserController {
@@ -25,12 +22,8 @@ export class LoginUserController {
                 params.password,
             )
 
-            return ok(sanitizeUserWithTokens(user))
+            return ok(sanitizeUserWithTokens(user), 'Login successful')
         } catch (error) {
-            if (error instanceof ZodError) {
-                return badRequest({ message: error.issues[0].message })
-            }
-
             if (
                 error instanceof InvalidPasswordError ||
                 error instanceof UserNotFoundError
@@ -38,10 +31,7 @@ export class LoginUserController {
                 return unauthorized()
             }
 
-            if (process.env.NODE_ENV !== 'production') {
-                console.error(error)
-            }
-            return serverError()
+            return mapErrorToHttpResponse(error)
         }
     }
 }

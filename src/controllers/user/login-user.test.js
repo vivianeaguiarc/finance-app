@@ -35,16 +35,14 @@ describe('LoginUserController', () => {
 
         expect(response.statusCode).toBe(200)
 
-        // garante que veio um usuário (ex: do fixture)
-        expect(response.body).toHaveProperty('id')
-
-        // garante que os tokens existem e têm os valores esperados
-        expect(response.body).toHaveProperty('tokens')
-        expect(response.body.tokens).toHaveProperty(
+        expect(response.body.success).toBe(true)
+        expect(response.body.data).toHaveProperty('id')
+        expect(response.body.data).toHaveProperty('tokens')
+        expect(response.body.data.tokens).toHaveProperty(
             'accessToken',
             'any_access-token',
         )
-        expect(response.body.tokens).toHaveProperty(
+        expect(response.body.data.tokens).toHaveProperty(
             'refreshToken',
             'any_refresh-token',
         )
@@ -83,6 +81,7 @@ describe('LoginUserController', () => {
     it('should not return password in response body', async () => {
         const { sut } = makeSut()
         const response = await sut.execute(httpRequest)
+        expect(response.body.data?.password).toBeUndefined()
         expect(response.body.password).toBeUndefined()
     })
 })

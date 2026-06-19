@@ -81,6 +81,7 @@ describe('GetUserById Controller', () => {
     it('should not return password in response body', async () => {
         const { sut } = makeSut()
         const result = await sut.execute(baseHttpRequest)
+        expect(result.body.data?.password).toBeUndefined()
         expect(result.body.password).toBeUndefined()
     })
 })

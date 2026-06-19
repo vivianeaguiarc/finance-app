@@ -1,8 +1,8 @@
 import {
+    ok,
+    mapErrorToHttpResponse,
     checkIfIdIsValid,
     invalidIdResponse,
-    ok,
-    serverError,
     userNotFoundResponse,
     forbidden,
     sanitizeUser,
@@ -32,12 +32,9 @@ export class GetUserByIdController {
             if (!user) {
                 return userNotFoundResponse()
             }
-            return ok(sanitizeUser(user))
+            return ok(sanitizeUser(user), 'User retrieved successfully')
         } catch (error) {
-            if (process.env.NODE_ENV !== 'production') {
-                console.error(error)
-            }
-            return serverError()
+            return mapErrorToHttpResponse(error)
         }
     }
 }

@@ -18,9 +18,11 @@ app.use(globalLimiter)
 
 app.get('/', (req, res) => {
     res.status(200).json({
-        status: 'OK',
-        message: 'FinanceApp API is running 🚀',
-        docs: '/docs',
+        success: true,
+        message: 'FinanceApp API is running',
+        data: {
+            docs: '/docs',
+        },
     })
 })
 

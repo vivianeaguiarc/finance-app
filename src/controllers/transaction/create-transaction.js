@@ -1,14 +1,11 @@
-import { ZodError } from 'zod'
 import { createdTransactionSchema } from '../../schemas/transaction.js'
 import {
-    badRequest,
     created,
-    serverError,
     userNotFoundResponse,
+    mapErrorToHttpResponse,
 } from '../helpers/index.js'
-
 import { UserNotFoundError } from '../../errors/user.js'
-import { logInternalError } from '../../middlewares/error-handler.js'
+
 export class CreateTransactionController {
     constructor(createTransactionUseCase) {
         this.createTransactionUseCase = createTransactionUseCase
@@ -20,18 +17,13 @@ export class CreateTransactionController {
 
             const transaction =
                 await this.createTransactionUseCase.execute(params)
-            return created(transaction)
+            return created(transaction, 'Transaction created successfully')
         } catch (error) {
-            if (error instanceof ZodError) {
-                return badRequest({
-                    message: error.issues[0].message,
-                })
-            }
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()
             }
-            logInternalError(error)
-            return serverError()
+
+            return mapErrorToHttpResponse(error)
         }
     }
 }

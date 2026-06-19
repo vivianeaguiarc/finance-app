@@ -3,29 +3,12 @@ import request from 'supertest'
 import { user } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
 import { TransactionType } from '@prisma/client'
-
-// Helper para criar usuário único em cada teste
-const createUser = async () => {
-    const uniqueUser = {
-        ...user,
-        id: undefined,
-        email: faker.internet.email(), // garante e-mail único
-    }
-
-    const res = await request(app).post('/api/users').send(uniqueUser)
-
-    expect(res.status).toBe(201)
-    expect(res.body).toHaveProperty('id')
-    expect(res.body).toHaveProperty('tokens')
-
-    return res.body
-}
+import { createUser } from './e2e-helpers.js'
 
 describe('User Routes E2E Tests', () => {
     const from = '2023-01-01'
     const to = '2023-12-31'
 
-    // -----------------------------------------------------------------------------
     it('POST /api/users → should return 201 when user is created', async () => {
         const res = await request(app)
             .post('/api/users')
@@ -36,11 +19,11 @@ describe('User Routes E2E Tests', () => {
             })
 
         expect(res.status).toBe(201)
-        expect(res.body).toHaveProperty('tokens.accessToken')
-        expect(res.body.password).toBeUndefined()
+        expect(res.body.success).toBe(true)
+        expect(res.body.data.tokens.accessToken).toBeDefined()
+        expect(res.body.data.password).toBeUndefined()
     })
 
-    // -----------------------------------------------------------------------------
     it('GET /api/users/me → should return 200 when if user is authenticated', async () => {
         const createdUser = await createUser()
 
@@ -49,11 +32,10 @@ describe('User Routes E2E Tests', () => {
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(200)
-        expect(res.body.id).toBe(createdUser.id)
-        expect(res.body.password).toBeUndefined()
+        expect(res.body.data.id).toBe(createdUser.id)
+        expect(res.body.data.password).toBeUndefined()
     })
 
-    // -----------------------------------------------------------------------------
     it('PATCH /api/users/me → should update user and return 200', async () => {
         const createdUser = await createUser()
 
@@ -70,13 +52,12 @@ describe('User Routes E2E Tests', () => {
             .send(update)
 
         expect(res.status).toBe(200)
-        expect(res.body.first_name).toBe(update.first_name)
-        expect(res.body.last_name).toBe(update.last_name)
-        expect(res.body.email).toBe(update.email)
-        expect(res.body.password).toBeUndefined()
+        expect(res.body.data.first_name).toBe(update.first_name)
+        expect(res.body.data.last_name).toBe(update.last_name)
+        expect(res.body.data.email).toBe(update.email)
+        expect(res.body.data.password).toBeUndefined()
     })
 
-    // -----------------------------------------------------------------------------
     it('POST /api/users/login → should return 200 and tokens', async () => {
         const createdUser = await createUser()
 
@@ -86,12 +67,11 @@ describe('User Routes E2E Tests', () => {
         })
 
         expect(res.status).toBe(200)
-        expect(res.body.tokens.accessToken).toBeDefined()
-        expect(res.body.tokens.refreshToken).toBeDefined()
-        expect(res.body.password).toBeUndefined()
+        expect(res.body.data.tokens.accessToken).toBeDefined()
+        expect(res.body.data.tokens.refreshToken).toBeDefined()
+        expect(res.body.data.password).toBeUndefined()
     })
 
-    // -----------------------------------------------------------------------------
     it('DELETE /api/users/me → should return 204 when user is deleted', async () => {
         const createdUser = await createUser()
 
@@ -103,27 +83,29 @@ describe('User Routes E2E Tests', () => {
         expect(res.body).toEqual({})
     })
 
-    // -----------------------------------------------------------------------------
     it('GET /api/users/me/balance → should return 200 and balance object', async () => {
         const createdUser = await createUser()
 
         const res = await request(app)
             .get(`/api/users/me/balance`)
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
-            .query({ from, to }) //  <<<<<<<<<< OBRIGATÓRIO AGORA
+            .query({ from, to })
 
         expect(res.status).toBe(200)
-        expect(res.body).toHaveProperty('balance')
-        expect(typeof Number(res.body.balance)).toBe('number')
+        expect(res.body.data).toHaveProperty('balance')
+        expect(typeof Number(res.body.data.balance)).toBe('number')
     })
-    // -----------------------------------------------------------------------------
+
     it('GET /api/users/me/balance should return 200 and correct balance', async () => {
-        const { body: createdUser } = await request(app)
+        const createRes = await request(app)
             .post('/api/users')
             .send({
                 ...user,
                 id: undefined,
+                email: faker.internet.email(),
             })
+
+        const createdUser = createRes.body.data
 
         await request(app)
             .post('/api/transactions/me')
@@ -163,7 +145,7 @@ describe('User Routes E2E Tests', () => {
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(response.status).toBe(200)
-        expect(response.body).toEqual({
+        expect(response.body.data).toEqual({
             earnings: '10000',
             expenses: '2000',
             investments: '2000',
@@ -173,15 +155,17 @@ describe('User Routes E2E Tests', () => {
             investmentsPercentage: '14',
         })
     })
-    // -----------------------------------------------------------------------------
+
     it('POST /api/users/refresh-token → should return 200 and new tokens', async () => {
-        const { body: createdUser } = await request(app)
+        const createRes = await request(app)
             .post('/api/users')
             .send({
                 ...user,
                 id: undefined,
                 email: faker.internet.email(),
             })
+
+        const createdUser = createRes.body.data
 
         const response = await request(app)
             .post('/api/users/refresh-token')
@@ -190,7 +174,7 @@ describe('User Routes E2E Tests', () => {
             })
 
         expect(response.status).toBe(200)
-        expect(response.body.accessToken).toBeDefined()
-        expect(response.body.refreshToken).toBeDefined()
+        expect(response.body.data.accessToken).toBeDefined()
+        expect(response.body.data.refreshToken).toBeDefined()
     })
 })

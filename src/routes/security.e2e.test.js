@@ -3,24 +3,19 @@ import request from 'supertest'
 import { user, transaction } from '../tests/fixtures/index.js'
 import { faker } from '@faker-js/faker'
 
-const createUser = async (email = faker.internet.email()) => {
-    const res = await request(app)
-        .post('/api/users')
-        .send({
-            ...user,
-            id: undefined,
-            email,
-        })
-
-    expect(res.status).toBe(201)
-    return res.body
-}
+import { createUser } from './e2e-helpers.js'
 
 describe('Security E2E Tests', () => {
     it('POST /api/users should not return password in response', async () => {
-        const createdUser = await createUser()
+        const res = await request(app)
+            .post('/api/users')
+            .send({
+                ...user,
+                id: undefined,
+                email: faker.internet.email(),
+            })
 
-        expect(createdUser.password).toBeUndefined()
+        expect(res.body.data?.password).toBeUndefined()
     })
 
     it('POST /api/users/login should not return password in response', async () => {
@@ -33,7 +28,7 @@ describe('Security E2E Tests', () => {
         })
 
         expect(res.status).toBe(200)
-        expect(res.body.password).toBeUndefined()
+        expect(res.body.data?.password).toBeUndefined()
     })
 
     it('GET /api/users/me should not return password in response', async () => {
@@ -44,14 +39,14 @@ describe('Security E2E Tests', () => {
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(res.status).toBe(200)
-        expect(res.body.password).toBeUndefined()
+        expect(res.body.data?.password).toBeUndefined()
     })
 
     it('DELETE /api/transactions/me/:id should return 403 for another user transaction', async () => {
         const owner = await createUser()
         const attacker = await createUser()
 
-        const { body: createdTransaction } = await request(app)
+        const createRes = await request(app)
             .post('/api/transactions/me')
             .set('Authorization', `Bearer ${owner.tokens.accessToken}`)
             .send({
@@ -60,11 +55,15 @@ describe('Security E2E Tests', () => {
                 id: undefined,
             })
 
+        const createdTransaction = createRes.body.data
+
         const response = await request(app)
             .delete(`/api/transactions/me/${createdTransaction.id}`)
             .set('Authorization', `Bearer ${attacker.tokens.accessToken}`)
 
         expect(response.status).toBe(403)
+        expect(response.body.success).toBe(false)
+        expect(response.body.code).toBe('FORBIDDEN')
     })
 
     it('DELETE /api/transactions/me/:id should return 404 for non-existent transaction', async () => {
@@ -75,5 +74,7 @@ describe('Security E2E Tests', () => {
             .set('Authorization', `Bearer ${createdUser.tokens.accessToken}`)
 
         expect(response.status).toBe(404)
+        expect(response.body.success).toBe(false)
+        expect(response.body.code).toBe('TRANSACTION_NOT_FOUND')
     })
 })

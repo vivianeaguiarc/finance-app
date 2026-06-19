@@ -7,61 +7,63 @@ import {
     makeDeleteTransactionController,
 } from '../factories/controllers/transaction.js'
 import { auth } from '../middlewares/auth.js'
+import { sendHttpResponse } from './http-response.js'
 
 export const transactionsRouter = Router()
 
 transactionsRouter.post('/me', auth, async (request, response) => {
     const controller = makeCreateTransactionController()
-
-    const { statusCode, body } = await controller.execute({
-        ...request,
-        userId: request.userId,
-        body: {
-            ...request.body,
-            user_id: request.userId,
-        },
-        params: { userId: request.userId },
-    })
-
-    response.status(statusCode).send(body)
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            ...request,
+            userId: request.userId,
+            body: {
+                ...request.body,
+                user_id: request.userId,
+            },
+            params: { userId: request.userId },
+        }),
+    )
 })
 
 transactionsRouter.get('/me', auth, async (request, response) => {
     const controller = makeGetTransactionsByUserIdController()
-
-    const { statusCode, body } = await controller.execute({
-        ...request,
-        userId: request.userId,
-        params: { userId: request.userId },
-        query: request.query,
-    })
-
-    response.status(statusCode).send(body)
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            ...request,
+            userId: request.userId,
+            params: { userId: request.userId },
+            query: request.query,
+        }),
+    )
 })
+
 transactionsRouter.get('/', auth, async (request, response) => {
     const controller = makeGetTransactionsByUserIdController()
-
-    const { statusCode, body } = await controller.execute({
-        ...request,
-        userId: request.userId,
-        query: request.query,
-    })
-
-    response.status(statusCode).send(body)
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            ...request,
+            userId: request.userId,
+            query: request.query,
+        }),
+    )
 })
 
 transactionsRouter.post('/', auth, async (request, response) => {
     const controller = makeCreateTransactionController()
-
-    const { statusCode, body } = await controller.execute({
-        ...request,
-        body: {
-            ...request.body,
-            user_id: request.userId,
-        },
-    })
-
-    response.status(statusCode).send(body)
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            ...request,
+            body: {
+                ...request.body,
+                user_id: request.userId,
+            },
+        }),
+    )
 })
 
 transactionsRouter.patch(
@@ -69,17 +71,17 @@ transactionsRouter.patch(
     auth,
     async (request, response) => {
         const controller = makeUpdateTransactionController()
-
-        const { statusCode, body } = await controller.execute({
-            ...request,
-            userId: request.userId,
-            body: {
-                ...request.params,
-                user_id: request.userId,
-            },
-        })
-
-        response.status(statusCode).send(body)
+        sendHttpResponse(
+            response,
+            await controller.execute({
+                ...request,
+                userId: request.userId,
+                body: {
+                    ...request.params,
+                    user_id: request.userId,
+                },
+            }),
+        )
     },
 )
 
@@ -88,16 +90,16 @@ transactionsRouter.delete(
     auth,
     async (request, response) => {
         const controller = makeDeleteTransactionController()
-
-        const { statusCode, body } = await controller.execute({
-            ...request,
-            userId: request.userId,
-            params: {
-                transactionId: request.params.transactionId,
-                user_id: request.userId,
-            },
-        })
-
-        response.status(statusCode).send(body)
+        sendHttpResponse(
+            response,
+            await controller.execute({
+                ...request,
+                userId: request.userId,
+                params: {
+                    transactionId: request.params.transactionId,
+                    user_id: request.userId,
+                },
+            }),
+        )
     },
 )

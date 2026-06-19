@@ -52,7 +52,9 @@ describe('Security hardening integration', () => {
 
         expect(response.status).toBe(403)
         expect(response.body).toEqual({
+            success: false,
             message: CORS_FORBIDDEN_MESSAGE,
+            code: 'FORBIDDEN',
         })
     })
 })
