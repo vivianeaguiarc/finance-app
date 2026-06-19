@@ -24,10 +24,7 @@ export class GetTransactionByUserIdController {
             })
 
             const { items, total } =
-                await this.getTransactionByUserIdUseCase.execute(
-                    userId,
-                    query,
-                )
+                await this.getTransactionByUserIdUseCase.execute(userId, query)
 
             const meta = buildPaginationMeta(query.page, query.limit, total)
 

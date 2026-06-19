@@ -123,6 +123,9 @@ describe('Get Transaction By User Id Controller', () => {
                 endDate: to,
             }),
         )
-        expect(executeSpy).not.toHaveBeenCalledWith(otherUserId, expect.anything())
+        expect(executeSpy).not.toHaveBeenCalledWith(
+            otherUserId,
+            expect.anything(),
+        )
     })
 })
