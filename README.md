@@ -6,7 +6,30 @@ O **FinanceApp** é uma API backend em **Node.js**, **Express**, **Prisma** e **
 
 Projeto de portfólio com arquitetura em camadas (controllers, use-cases, repositories, adapters), testes automatizados, CI/CD e documentação Swagger.
 
-**Documentação interativa:** [https://finance-app-i600.onrender.com/docs/](https://finance-app-i600.onrender.com/docs/)
+---
+
+## 📖 API Documentation
+
+Documentação interativa **Swagger UI**:
+
+| Ambiente | URL |
+|----------|-----|
+| Produção (Render) | [https://finance-app-i600.onrender.com/docs/](https://finance-app-i600.onrender.com/docs/) |
+| Local | [http://localhost:3000/docs](http://localhost:3000/docs) |
+
+### Como autenticar no Swagger
+
+1. Registre-se ou faça login:
+   - `POST /api/users` (Auth) — cadastro
+   - `POST /api/users/login` (Auth) — login
+2. Copie o `accessToken` retornado em `data.tokens.accessToken`.
+3. Clique em **Authorize** (cadeado) no topo do Swagger UI.
+4. Informe: `Bearer <seu_accessToken>` (inclua a palavra `Bearer` e um espaço).
+5. Execute rotas protegidas em **Users** e **Transactions**.
+
+Para renovar tokens, use `POST /api/users/refresh-token` com o `refreshToken` obtido no login.
+
+O contrato completo (schemas, exemplos, erros 400/401/403/404/409/429) está em [`docs/swagger.json`](docs/swagger.json).
 
 ---
 
