@@ -90,53 +90,81 @@ Outras libs: `dayjs`, `validator`, `uuid`, `swagger-ui-express`, Husky, ESLint, 
 
 ## Arquitetura
 
-O projeto segue **arquitetura em camadas** com separação clara de responsabilidades:
+O projeto evoluiu para uma **arquitetura modular em camadas**, inspirada em Clean Architecture e Hexagonal Architecture, com separação clara de responsabilidades por domínio.
+
+### Fluxo de uma requisição
 
 ```mermaid
 flowchart LR
     A[HTTP Request] --> B[Routes]
     B --> C[Middlewares]
-    C --> D[Controllers]
-    D --> E[Use Cases]
-    E --> F[Repositories]
+    C --> D[Controller]
+    D --> E[Service]
+    E --> F[Repository]
     F --> G[Prisma Client]
     G --> H[(PostgreSQL)]
 ```
 
 | Camada | Responsabilidade |
 |--------|------------------|
-| **Routes** | Mapeamento HTTP, composição de middlewares |
-| **Middlewares** | Auth JWT, rate limit, CORS, request ID, structured logging, error handler |
-| **Controllers** | Validação de entrada, status HTTP, formato de resposta |
-| **Use cases** | Regras de negócio e orquestração |
-| **Repositories** | Acesso a dados (Prisma) |
-| **Adapters** | Serviços externos (bcrypt, JWT, UUID) |
-| **Schemas** | Contratos Zod compartilhados |
-| **Factories** | Injeção de dependências (composition root) |
+| **Routes** | Mapeamento HTTP e composição de middlewares por módulo |
+| **Middlewares** | Auth JWT, rate limit, CORS, request ID, logging, error handler |
+| **Controllers** | Adaptação HTTP: validação de entrada, status code, formato de resposta |
+| **Services** | Regras de negócio e orquestração (antes: use cases) |
+| **Repositories** | Acesso a dados via Prisma — única camada que conhece o ORM |
+| **Adapters** | Serviços externos (bcrypt, JWT, UUID, cache Redis) |
+| **Schemas** | Contratos Zod por módulo |
+| **Composition** | Injeção de dependências (composition root por módulo) |
+
+### Por que essa separação?
+
+- **Controllers** não conhecem Prisma — facilitam testes de contrato HTTP.
+- **Services** recebem e retornam dados simples, sem `req`/`res` — regras de negócio testáveis com mocks de repository.
+- **Repositories** concentram queries — mudanças de persistência ficam isoladas.
+- **Módulos por domínio** (`auth`, `users`, `transactions`) reduzem acoplamento e tornam a evolução incremental segura.
 
 ### Estrutura de pastas
 
 ```
 src/
-├── adapters/          # bcrypt, JWT, geração de ID, cache Redis
-├── config/            # CORS, Helmet, logger (Pino)
-├── controllers/       # Handlers HTTP
-├── errors/            # Erros de domínio (AppError)
-├── factories/         # Montagem de controllers/use cases
-├── middlewares/       # auth, rate-limit, request-id, request-logger, error-handler
-├── repositories/      # Implementações Prisma
-├── routes/            # Rotas Express
-├── schemas/           # Validação Zod
-├── tests/
-│   └── integration/   # Testes de integração E2E
-├── use-cases/         # Regras de negócio
-└── utils/             # Helpers (paginação, Prisma errors)
+├── modules/
+│   ├── auth/              # Cadastro, login, refresh, logout
+│   │   ├── auth.routes.js
+│   │   ├── auth.controller.js
+│   │   ├── auth.service.js
+│   │   ├── auth.repository.js
+│   │   ├── auth.schemas.js
+│   │   └── auth.composition.js
+│   ├── users/             # Perfil e saldo (/me)
+│   ├── transactions/      # CRUD de lançamentos
+│   ├── categories/        # Placeholder (CRUD futuro)
+│   └── health/            # Health check com repository
+├── shared/
+│   ├── errors/            # Erros de domínio (AppError)
+│   ├── middlewares/       # auth, rate-limit, request-id, error-handler
+│   ├── http/              # sendHttpResponse, map-error, sanitize
+│   ├── utils/             # paginação, cache keys, Prisma errors
+│   ├── database/          # Prisma client (ponto único de acesso)
+│   ├── logger/            # Pino
+│   └── validators/        # Helpers de validação compartilhados
+├── config/                # CORS, Helmet, logger, env
+├── adapters/              # bcrypt, JWT, UUID, cache Redis
+├── controllers/           # Implementações HTTP (re-exportadas pelos módulos)
+├── repositories/          # Implementações Prisma (re-exportadas pelos módulos)
+├── use-cases/             # Regras de negócio (re-exportadas como services)
+├── routes/                # Montagem de routers (compatibilidade)
+├── schemas/               # Schemas Zod legados
+├── factories/             # Re-export das compositions (compatibilidade com testes)
+└── tests/
+    └── integration/       # Testes E2E com Supertest
 prisma/
 ├── schema.prisma
 └── migrations/
 docs/
-└── swagger.json       # Contrato OpenAPI
+└── swagger.json           # Contrato OpenAPI
 ```
+
+> **Migração incremental:** pastas legadas (`controllers/`, `use-cases/`, `repositories/`, `factories/`) permanecem como implementação física; os módulos agrupam responsabilidades e expõem o padrão Route → Middleware → Controller → Service → Repository → Prisma. A remoção das pastas antigas pode ocorrer em etapas futuras, módulo a módulo.
 
 ---
 

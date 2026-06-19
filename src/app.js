@@ -1,16 +1,17 @@
 import express from 'express'
 import cors from 'cors'
 import { usersRouter, transactionsRouter } from './routes/index.js'
-import { healthHandler } from './routes/health.js'
+import { healthHandler } from './modules/health/health.controller.js'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
 import { join } from 'path'
-import { getCorsOptions } from './config/cors.js'
-import { getHelmetMiddleware } from './config/helmet.js'
-import { globalLimiter } from './middlewares/rate-limit.js'
-import { requestIdMiddleware } from './middlewares/request-id.js'
-import { requestLogger } from './middlewares/request-logger.js'
-import { errorHandler } from './middlewares/error-handler.js'
+import { getCorsOptions, getHelmetMiddleware } from './config/index.js'
+import {
+    globalLimiter,
+    requestIdMiddleware,
+    requestLogger,
+    errorHandler,
+} from './shared/middlewares/index.js'
 
 export const app = express()
 
