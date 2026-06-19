@@ -107,6 +107,7 @@ jobs:
       - name: Install dependencies (disable husky)
         env:
           HUSKY: 0
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm ci --no-audit --no-fund
 
       - name: Prisma generate
