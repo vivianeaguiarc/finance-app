@@ -1,7 +1,10 @@
 import { execSync } from 'node:child_process'
 import {
     assertDatabaseUrlHasCredentials,
+    assertMigrationUsesDirectHost,
+    getDatabaseHostname,
     resolveMigrationDatabaseUrl,
+    toNeonDirectConnectionUrl,
 } from './resolve-migration-database-url.js'
 
 const databaseUrl = process.env.DATABASE_URL
@@ -10,10 +13,25 @@ const directDatabaseUrl = process.env.DIRECT_DATABASE_URL
 assertDatabaseUrlHasCredentials(databaseUrl)
 
 const migrateUrl = resolveMigrationDatabaseUrl(databaseUrl, directDatabaseUrl)
+assertMigrationUsesDirectHost(migrateUrl)
 
-if (migrateUrl !== databaseUrl.trim()) {
+const sourceHost = getDatabaseHostname(directDatabaseUrl?.trim() || databaseUrl)
+const migrateHost = getDatabaseHostname(migrateUrl)
+
+console.log(`Prisma migrate deploy target host: ${migrateHost}`)
+
+if (sourceHost.includes('-pooler.')) {
     console.log(
-        'Using Neon direct connection URL for prisma migrate deploy (pooler host converted).',
+        'Neon pooler host detected; using direct connection for migrate deploy.',
+    )
+}
+
+if (
+    directDatabaseUrl?.trim() &&
+    toNeonDirectConnectionUrl(directDatabaseUrl) !== directDatabaseUrl.trim()
+) {
+    console.log(
+        'DIRECT_DATABASE_URL pointed to Neon pooler; converted to direct host automatically.',
     )
 }
 

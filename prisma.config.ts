@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
+import { toNeonDirectConnectionUrl } from './scripts/resolve-migration-database-url.js'
 
 function getDatabaseUrl() {
     if (process.env.DATABASE_URL) {
@@ -12,17 +13,10 @@ function getDatabaseUrl() {
 
 function getDirectDatabaseUrl() {
     if (process.env.DIRECT_DATABASE_URL) {
-        return process.env.DIRECT_DATABASE_URL
+        return toNeonDirectConnectionUrl(process.env.DIRECT_DATABASE_URL)
     }
 
-    const url = getDatabaseUrl()
-
-    // Neon pooler host → direct host for Prisma CLI (migrate, introspect, etc.)
-    if (url.includes('-pooler.')) {
-        return url.replace('-pooler.', '.')
-    }
-
-    return url
+    return toNeonDirectConnectionUrl(getDatabaseUrl())
 }
 
 export default defineConfig({

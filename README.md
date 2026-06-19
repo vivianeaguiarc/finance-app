@@ -929,7 +929,7 @@ Os testes de integração limpam `users` e `transactions` entre casos e **recusa
 ## Deploy (Render)
 
 1. Web Service apontando para o repositório GitHub.
-2. **Build:** `npm install && npx prisma migrate deploy`
+2. **Build:** `npm install && npm run migrations && npm start` (ou apenas `npm run migrations` antes do start)
 3. **Start:** `npm start`
 4. Variáveis: `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `FRONTEND_URL`, `NODE_ENV=production`
 5. `PORT` é injetado pelo Render — não fixe no código.
@@ -950,8 +950,10 @@ O job `migrate` (apenas em `main`) aplica migrations no banco de produção **an
 **Erro `P1000: Authentication failed`**
 
 1. Confirme que `DATABASE_URL` no GitHub → **Settings → Environments → production** contém a string **completa** copiada do Neon (não use placeholders como `${USER}`).
-2. Se a URL usa host `-pooler`, o script `scripts/prisma-migrate-deploy.js` converte para conexão direct; alternativamente, configure `DIRECT_DATABASE_URL` com a URL direct do Neon.
-3. Se a senha foi rotacionada no Neon, atualize o secret no GitHub.
+2. O script `npm run migrations` (`scripts/prisma-migrate-deploy.js`) converte automaticamente hosts `-pooler` para conexão **direct** — inclusive quando `DIRECT_DATABASE_URL` aponta por engano para o pooler.
+3. Se a senha foi rotacionada no Neon, atualize o secret no GitHub **e** no Render.
+4. No **Render**, o build **não** deve usar `npx prisma migrate deploy` direto — use `npm run migrations`.
+5. Nos logs do CI, confira a linha `Prisma migrate deploy target host:` — o host **não** deve conter `-pooler`.
 
 ---
 

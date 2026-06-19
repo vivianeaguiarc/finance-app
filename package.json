@@ -22,7 +22,7 @@
         "docker:up": "npm run docker:setup && docker compose up -d --build",
         "docker:down": "docker compose down",
         "docker:logs": "docker compose logs -f app",
-        "docker:migrate": "docker compose exec app npx prisma migrate deploy",
+        "docker:migrate": "docker compose exec app node scripts/prisma-migrate-deploy.js",
         "docker:test:up": "docker compose --profile test up -d postgres-test"
     },
     "repository": {

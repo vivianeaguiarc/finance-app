@@ -11,7 +11,7 @@ until pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" >/d
 done
 
 echo "Running Prisma migrations..."
-npx prisma migrate deploy
+node scripts/prisma-migrate-deploy.js
 
 echo "Starting application..."
 exec "$@"

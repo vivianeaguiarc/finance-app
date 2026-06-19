@@ -109,8 +109,8 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
 
-      - name: Run migrations
-        run: node scripts/prisma-migrate-deploy.js
+      - name: Run migrations (Neon direct URL)
+        run: npm run migrations
 
   deploy:
     name: Deploy to Production
