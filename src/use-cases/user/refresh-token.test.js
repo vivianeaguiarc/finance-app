@@ -32,9 +32,10 @@ describe('Refresh Token Use Case', () => {
     it('should throw UnauthorizedError when auth token service rejects token', async () => {
         const { sut, authTokenService } = makeSut()
 
-        jest.spyOn(authTokenService, 'rotateRefreshToken').mockRejectedValueOnce(
-            new UnauthorizedError(),
-        )
+        jest.spyOn(
+            authTokenService,
+            'rotateRefreshToken',
+        ).mockRejectedValueOnce(new UnauthorizedError())
 
         await expect(sut.execute('invalid-token')).rejects.toThrow(
             UnauthorizedError,
