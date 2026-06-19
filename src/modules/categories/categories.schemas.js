@@ -1,2 +1,1 @@
-/** Placeholder — schemas Zod para categorias ainda não implementados. */
-export {}
+export { createCategorySchema } from '../../schemas/category.js'

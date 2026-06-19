@@ -72,3 +72,11 @@ export const serverError = (
     message = 'Internal server error',
     code = 'INTERNAL_ERROR',
 ) => errorResponse(500, message, code)
+
+export const fileDownload = (body, contentType, filename) => ({
+    statusCode: 200,
+    contentType,
+    contentDisposition: `attachment; filename="${filename}"`,
+    body,
+    isBinary: true,
+})

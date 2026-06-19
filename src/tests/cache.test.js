@@ -218,6 +218,9 @@ describe('Cache invalidation on writes', () => {
         const idGeneratorAdapter = {
             execute: jest.fn().mockReturnValue('tx-1'),
         }
+        const getCategoryByIdRepository = {
+            execute: jest.fn(),
+        }
 
         const readUseCase = new GetUserBalanceUseCase(
             getUserBalanceRepository,
@@ -227,6 +230,7 @@ describe('Cache invalidation on writes', () => {
         const createUseCase = new CreateTransactionUseCase(
             createTransactionRepository,
             getUserByIdRepository,
+            getCategoryByIdRepository,
             idGeneratorAdapter,
             cache,
         )

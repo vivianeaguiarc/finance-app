@@ -180,6 +180,7 @@ describe('Dashboard cache', () => {
         const createTransactionUseCase = new CreateTransactionUseCase(
             { execute: jest.fn().mockResolvedValue({ id: 'tx-1' }) },
             { execute: jest.fn().mockResolvedValue({ id: 'user-1' }) },
+            { execute: jest.fn() },
             { execute: jest.fn().mockReturnValue('tx-id') },
             cache,
         )

@@ -56,6 +56,8 @@ export async function ensureDatabaseReady() {
 
 export async function resetDatabase() {
     await prisma.transaction.deleteMany()
+    await prisma.monthlyBudget.deleteMany()
+    await prisma.category.deleteMany()
     await prisma.refreshTokenSession.deleteMany()
     await prisma.user.deleteMany()
 }

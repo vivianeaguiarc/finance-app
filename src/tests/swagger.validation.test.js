@@ -35,6 +35,19 @@ describe('swagger.json', () => {
         expect(document.paths['/api/transactions/me']?.get).toBeDefined()
     })
 
+    it('should document finance endpoints', () => {
+        expect(document.paths['/api/categories']?.post).toBeDefined()
+        expect(document.paths['/api/budgets']?.post).toBeDefined()
+        expect(document.paths['/api/budgets/status']?.get).toBeDefined()
+        expect(document.paths['/api/reports/financial']?.get).toBeDefined()
+        expect(
+            document.paths['/api/transactions/me/installments']?.post,
+        ).toBeDefined()
+        expect(
+            document.paths['/api/transactions/me/recurring']?.post,
+        ).toBeDefined()
+    })
+
     it('should document auth endpoints including logout', () => {
         expect(document.paths['/api/users/login']?.post).toBeDefined()
         expect(document.paths['/api/users/refresh-token']?.post).toBeDefined()

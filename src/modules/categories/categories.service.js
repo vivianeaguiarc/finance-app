@@ -1,2 +1,4 @@
-/** Placeholder — regras de negócio de categorias ainda não implementadas. */
-export {}
+export {
+    CreateCategoryUseCase,
+    ListCategoriesUseCase,
+} from '../../use-cases/category/category.js'

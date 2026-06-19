@@ -23,16 +23,67 @@ import {
 } from './transactions.repository.js'
 import { IdGeneratorAdapter } from '../../adapters/index.js'
 import { getCacheService } from '../../adapters/cache-service.js'
+import { PostgresGetCategoryByIdRepository } from '../categories/categories.repository.js'
+import { PostgresCreateManyTransactionsRepository } from '../../repositories/postgres/transaction/create-many-transactions.js'
+import { PostgresListRecurringTransactionsRepository } from '../../repositories/postgres/transaction/list-recurring-transactions.js'
+import { CreateInstallmentTransactionUseCase } from '../../use-cases/transaction/create-installment-transaction.js'
+import {
+    CreateRecurringTransactionUseCase,
+    ListRecurringTransactionsUseCase,
+} from '../../use-cases/transaction/create-recurring-transaction.js'
+import { CreateInstallmentTransactionController } from '../../controllers/transaction/create-installment-transaction.js'
+import {
+    CreateRecurringTransactionController,
+    ListRecurringTransactionsController,
+} from '../../controllers/transaction/create-recurring-transaction.js'
+
+export const makeCreateInstallmentTransactionController = () => {
+    const cacheService = getCacheService()
+
+    return new CreateInstallmentTransactionController(
+        new CreateInstallmentTransactionUseCase(
+            new PostgresCreateManyTransactionsRepository(),
+            new PostgresGetUserByIdRepository(),
+            new PostgresGetCategoryByIdRepository(),
+            new IdGeneratorAdapter(),
+            cacheService,
+        ),
+    )
+}
+
+export const makeCreateRecurringTransactionController = () => {
+    const cacheService = getCacheService()
+
+    return new CreateRecurringTransactionController(
+        new CreateRecurringTransactionUseCase(
+            new PostgresCreateManyTransactionsRepository(),
+            new PostgresGetUserByIdRepository(),
+            new PostgresGetCategoryByIdRepository(),
+            new IdGeneratorAdapter(),
+            cacheService,
+        ),
+    )
+}
+
+export const makeListRecurringTransactionsController = () =>
+    new ListRecurringTransactionsController(
+        new ListRecurringTransactionsUseCase(
+            new PostgresListRecurringTransactionsRepository(),
+            new PostgresGetUserByIdRepository(),
+        ),
+    )
 
 export const makeCreateTransactionController = () => {
     const cacheService = getCacheService()
     const createTransactionRepository =
         new PostgresCreateTransactionRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
+    const getCategoryByIdRepository = new PostgresGetCategoryByIdRepository()
     const idGeneratorAdapter = new IdGeneratorAdapter()
     const createTransactionUseCase = new CreateTransactionUseCase(
         createTransactionRepository,
         getUserByIdRepository,
+        getCategoryByIdRepository,
         idGeneratorAdapter,
         cacheService,
     )

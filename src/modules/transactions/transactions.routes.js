@@ -4,11 +4,46 @@ import {
     makeGetTransactionsByUserIdController,
     makeUpdateTransactionController,
     makeDeleteTransactionController,
+    makeCreateInstallmentTransactionController,
+    makeCreateRecurringTransactionController,
+    makeListRecurringTransactionsController,
 } from './transactions.composition.js'
 import { auth } from '../../shared/middlewares/index.js'
 import { sendHttpResponse } from '../../shared/http/send-http-response.js'
 
 export const transactionsRouter = Router()
+
+transactionsRouter.post('/me/installments', auth, async (request, response) => {
+    const controller = makeCreateInstallmentTransactionController()
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            userId: request.userId,
+            body: request.body,
+        }),
+    )
+})
+
+transactionsRouter.post('/me/recurring', auth, async (request, response) => {
+    const controller = makeCreateRecurringTransactionController()
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            userId: request.userId,
+            body: request.body,
+        }),
+    )
+})
+
+transactionsRouter.get('/me/recurring', auth, async (request, response) => {
+    const controller = makeListRecurringTransactionsController()
+    sendHttpResponse(
+        response,
+        await controller.execute({
+            userId: request.userId,
+        }),
+    )
+})
 
 transactionsRouter.post('/me', auth, async (request, response) => {
     const controller = makeCreateTransactionController()

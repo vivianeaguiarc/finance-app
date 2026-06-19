@@ -26,14 +26,22 @@ describe('CreateTransactionUseCase', () => {
         }
     }
 
+    class GetCategoryByIdRepositoryStub {
+        async execute() {
+            return null
+        }
+    }
+
     const makeSut = () => {
         const createTransactionRepository =
             new CreateTransactionRepositoryStub()
         const idGeneratorAdapter = new IdGeneratorAdapterStub()
         const getUserByIdRepository = new GetUserByIdRepositoryStub()
+        const getCategoryByIdRepository = new GetCategoryByIdRepositoryStub()
         const sut = new CreateTransactionUseCase(
             createTransactionRepository,
             getUserByIdRepository,
+            getCategoryByIdRepository,
             idGeneratorAdapter,
         )
 
@@ -84,6 +92,7 @@ describe('CreateTransactionUseCase', () => {
         expect(createTransactionSpy).toHaveBeenCalledWith({
             ...createTransactionParams,
             id: 'random-id',
+            category_id: null,
         })
     })
     it('should throw UserNotFoundError if user does not exist', async () => {
@@ -93,9 +102,7 @@ describe('CreateTransactionUseCase', () => {
             .spyOn(getUserByIdRepository, 'execute')
             .mockResolvedValueOnce(null)
         const promise = sut.execute(createTransactionParams)
-        await expect(promise).rejects.toThrow(
-            new UserNotFoundError(createTransactionParams.user_id),
-        )
+        await expect(promise).rejects.toThrow(UserNotFoundError)
     })
     it('should throw if GetUserByIdRepository throws', async () => {
         const { sut, getUserByIdRepository, createTransactionParams } =

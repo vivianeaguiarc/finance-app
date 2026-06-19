@@ -4,6 +4,9 @@ import {
     usersRouter,
     transactionsRouter,
     dashboardRouter,
+    categoriesRouter,
+    budgetsRouter,
+    reportsRouter,
 } from './routes/index.js'
 import { healthHandler } from './modules/health/health.controller.js'
 import swaggerUi from 'swagger-ui-express'
@@ -43,6 +46,9 @@ app.get('/health', healthHandler)
 app.use('/api/users', usersRouter)
 app.use('/api/transactions', transactionsRouter)
 app.use('/api/dashboard', dashboardRouter)
+app.use('/api/categories', categoriesRouter)
+app.use('/api/budgets', budgetsRouter)
+app.use('/api/reports', reportsRouter)
 
 const swaggerPath = join(process.cwd(), 'docs', 'swagger.json')
 const swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, 'utf-8'))

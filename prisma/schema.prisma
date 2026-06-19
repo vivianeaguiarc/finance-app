@@ -14,32 +14,83 @@ model User {
   email                String                @unique @db.VarChar(100)
   password             String                @db.VarChar(100)
   transactions         Transaction[]
+  categories           Category[]
+  monthlyBudgets       MonthlyBudget[]
   refreshTokenSessions RefreshTokenSession[]
 
   @@map("users")
 }
 
-// Modelando a Tabela de Transações no Prisma
+model Category {
+  id           String          @id @default(uuid())
+  user_id      String          @map("user_id")
+  user         User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  name         String          @db.VarChar(50)
+  created_at   DateTime        @default(now()) @map("created_at")
+  transactions Transaction[]
+  budgets      MonthlyBudget[]
+
+  @@unique([user_id, name])
+  @@index([user_id])
+  @@map("categories")
+}
 
 model Transaction {
-  id         String          @id @default(uuid())
-  user_id    String
-  user       User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  name       String          @db.VarChar(50)
-  date       DateTime        @db.Date
-  amount     Decimal         @db.Decimal(10, 2)
-  type       TransactionType
-  created_at DateTime        @default(now()) @map("created_at")
+  id                    String           @id @default(uuid())
+  user_id               String           @map("user_id")
+  user                  User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  category_id           String?          @map("category_id")
+  category              Category?        @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  name                  String           @db.VarChar(50)
+  date                  DateTime         @db.Date
+  amount                Decimal          @db.Decimal(10, 2)
+  type                  TransactionType
+  created_at            DateTime         @default(now()) @map("created_at")
+  is_recurring          Boolean          @default(false) @map("is_recurring")
+  recurrence_type       RecurrenceType?  @map("recurrence_type")
+  recurrence_end_date   DateTime?        @map("recurrence_end_date") @db.Date
+  parent_transaction_id String?          @map("parent_transaction_id")
+  parent                Transaction?     @relation("RecurringSeries", fields: [parent_transaction_id], references: [id], onDelete: Cascade)
+  children              Transaction[]    @relation("RecurringSeries")
+  is_installment        Boolean          @default(false) @map("is_installment")
+  installment_number    Int?             @map("installment_number")
+  total_installments    Int?             @map("total_installments")
+  installment_group_id  String?          @map("installment_group_id")
 
   @@index([user_id])
   @@index([user_id, date])
+  @@index([user_id, installment_group_id])
+  @@index([user_id, is_recurring])
+  @@index([user_id, category_id])
   @@map("transactions")
+}
+
+model MonthlyBudget {
+  id           String   @id @default(uuid())
+  user_id      String   @map("user_id")
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  category_id  String   @map("category_id")
+  category     Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  month        Int
+  year         Int
+  limit_amount Decimal  @map("limit_amount") @db.Decimal(10, 2)
+  created_at   DateTime @default(now()) @map("created_at")
+
+  @@unique([user_id, category_id, month, year])
+  @@index([user_id, year, month])
+  @@map("monthly_budgets")
 }
 
 enum TransactionType {
   EARNING
   EXPENSE
   INVESTMENT
+}
+
+enum RecurrenceType {
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 model RefreshTokenSession {
@@ -57,4 +108,3 @@ model RefreshTokenSession {
   @@index([expires_at])
   @@map("refresh_token_sessions")
 }
-

@@ -1,3 +1,6 @@
 export * from './app-error.js'
 export * from './transaction.js'
+export * from './transaction-finance.js'
 export * from './user.js'
+export * from './category.js'
+export * from './budget.js'

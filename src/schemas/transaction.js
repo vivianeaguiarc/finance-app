@@ -39,6 +39,10 @@ export const createdTransactionSchema = z.object({
                 message: 'Amount must be a valid currency value',
             },
         ),
+    categoryId: z
+        .string()
+        .uuid({ message: 'categoryId must be a valid UUID' })
+        .optional(),
 })
 
 export const updateTransactionSchema = createdTransactionSchema

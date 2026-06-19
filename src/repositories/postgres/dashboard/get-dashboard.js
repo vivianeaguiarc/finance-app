@@ -109,7 +109,7 @@ export class PostgresGetDashboardRepository {
     }
 
     async getByMonthAggregates(userId, where) {
-        const conditions = [Prisma.sql`user_id = ${userId}::uuid`]
+        const conditions = [Prisma.sql`user_id = ${userId}`]
 
         if (where.date?.gte) {
             conditions.push(Prisma.sql`date >= ${where.date.gte}`)
