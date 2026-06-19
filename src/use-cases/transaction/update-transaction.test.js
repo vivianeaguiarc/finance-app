@@ -87,6 +87,7 @@ describe('Update Transaction Use Case', () => {
 
         await sut.execute(id, updateData)
 
+        expect(getTransactionByIdRepository.execute).toHaveBeenCalledWith(id)
         expect(updateTransactionRepository.execute).toHaveBeenCalledWith(id, {
             amount: 500,
         })
@@ -132,5 +133,9 @@ describe('Update Transaction Use Case', () => {
                 amount: 999,
             }),
         ).rejects.toThrow(ForbiddenError)
+
+        expect(getTransactionByIdRepository.execute).toHaveBeenCalledWith(
+            't-123',
+        )
     })
 })

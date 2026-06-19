@@ -27,10 +27,8 @@ export class UpdateTransactionUseCase {
     async execute(transactionId, params) {
         const { user_id, ...updateData } = params
 
-        const transaction = await this.getTransactionByIdRepository.execute(
-            transactionId,
-            user_id,
-        )
+        const transaction =
+            await this.getTransactionByIdRepository.execute(transactionId)
 
         if (!transaction) {
             throw new TransactionNotFoundError(transactionId)
