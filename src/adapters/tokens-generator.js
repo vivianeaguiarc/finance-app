@@ -1,22 +1,9 @@
 import jwt from 'jsonwebtoken'
 
 export class TokensGeneratorAdapter {
-    execute(userId) {
-        const accessToken = jwt.sign(
-            { userId },
-            process.env.JWT_ACCESS_SECRET,
-            { expiresIn: '15m' },
-        )
-
-        const refreshToken = jwt.sign(
-            { userId },
-            process.env.JWT_REFRESH_SECRET,
-            { expiresIn: '7d' },
-        )
-
-        return {
-            accessToken,
-            refreshToken,
-        }
+    generateAccessToken(userId) {
+        return jwt.sign({ userId }, process.env.JWT_ACCESS_SECRET, {
+            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+        })
     }
 }

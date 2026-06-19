@@ -1,13 +1,13 @@
 import { UnauthorizedError } from '../../errors/index.js'
 
-export class RefreshTokenUseCase {
+export class LogoutUserUseCase {
     constructor(authTokenService) {
         this.authTokenService = authTokenService
     }
 
     async execute(refreshToken) {
         try {
-            return await this.authTokenService.rotateRefreshToken(refreshToken)
+            await this.authTokenService.revokeRefreshToken(refreshToken)
         } catch (error) {
             if (error instanceof UnauthorizedError) {
                 throw error

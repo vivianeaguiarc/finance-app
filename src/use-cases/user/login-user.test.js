@@ -26,8 +26,8 @@ describe('LoginUserUseCase', () => {
             return true
         }
     }
-    class TokensGeneratorAdapterStub {
-        execute() {
+    class AuthTokenServiceStub {
+        async issueTokens() {
             return {
                 accessToken: 'any_access_token',
                 refreshToken: 'any_refresh_token',
@@ -39,14 +39,14 @@ describe('LoginUserUseCase', () => {
         const getUserByEmailRepositoryStub = new GetUserByEmailRepositoryStub()
         const passwordComparatorAdapterStub =
             new PasswordComparatorAdapterStub()
-        const tokensGeneratorAdapterStub = new TokensGeneratorAdapterStub()
+        const authTokenServiceStub = new AuthTokenServiceStub()
 
         const sut = useStub
-            ? loginUserUseCaseStub // <= AQUI o stub é retornado
+            ? loginUserUseCaseStub
             : new LoginUserUseCase(
                   getUserByEmailRepositoryStub,
                   passwordComparatorAdapterStub,
-                  tokensGeneratorAdapterStub,
+                  authTokenServiceStub,
               )
 
         return {
@@ -54,7 +54,7 @@ describe('LoginUserUseCase', () => {
             loginUserUseCaseStub,
             getUserByEmailRepositoryStub,
             passwordComparatorAdapterStub,
-            tokensGeneratorAdapterStub,
+            authTokenServiceStub,
         }
     }
     const httpRequest = {

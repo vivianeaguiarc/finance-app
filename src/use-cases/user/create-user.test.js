@@ -28,8 +28,8 @@ describe('CreateUserUseCase', () => {
                 return 'generated_id'
             }
         }
-        class TokenGeneratorAdapterStub {
-            execute() {
+        class AuthTokenServiceStub {
+            async issueTokens() {
                 return {
                     accessToken: 'any_access_token',
                     refreshToken: 'any_refresh_token',
@@ -41,13 +41,13 @@ describe('CreateUserUseCase', () => {
         const createUserRepository = new CreateUserRepositoryStub()
         const passwordHasherAdapter = new PasswordHasherAdapterStub()
         const idGeneratorAdapter = new IdGeneratorAdapterStub()
-        const tokenGeneratorAdapter = new TokenGeneratorAdapterStub()
+        const authTokenService = new AuthTokenServiceStub()
         const sut = new CreateUserUseCase(
             getUserByEmailRepository,
             createUserRepository,
             passwordHasherAdapter,
             idGeneratorAdapter,
-            tokenGeneratorAdapter,
+            authTokenService,
         )
         return {
             sut,
@@ -56,7 +56,7 @@ describe('CreateUserUseCase', () => {
             createUserRepository,
             passwordHasherAdapter,
             idGeneratorAdapter,
-            tokenGeneratorAdapter,
+            authTokenService,
         }
     }
 

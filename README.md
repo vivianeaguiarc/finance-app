@@ -172,9 +172,29 @@ docs/
 4. Informe: `Bearer <seu_accessToken>` (com a palavra `Bearer` e um espaço).
 5. Teste rotas em **Users** e **Transactions**.
 
-Renovação: `POST /api/users/refresh-token` com o `refreshToken` do login.
+Renovação: `POST /api/users/refresh-token` com o `refreshToken` — cada refresh invalida o token anterior e emite um novo par.
+
+Logout: `POST /api/users/logout` com o `refreshToken` no body, ou `POST /api/users/logout-all` com Bearer token.
 
 Contrato completo: [`docs/swagger.json`](docs/swagger.json).
+
+---
+
+## Autenticação e sessões
+
+A API usa **access token JWT** de curta duração e **refresh token opaco** rotacionado, armazenado no banco apenas como **hash bcrypt**.
+
+| Aspecto | Estratégia |
+|---------|------------|
+| Access token | JWT assinado; expiração curta (`JWT_ACCESS_EXPIRES_IN`, padrão `15m`) |
+| Refresh token | Opaque `{sessionId}.{secret}`; expiração maior (`JWT_REFRESH_EXPIRES_IN`, padrão `7d`) |
+| Armazenamento | Apenas `token_hash` (bcrypt do secret) em `refresh_token_sessions` |
+| Rotação | Cada refresh invalida o token anterior e emite novo par |
+| Reuso detectado | Refresh token já usado/revogado → revoga **todas** as sessões do usuário → `401` |
+| Logout | Revoga sessão atual (`POST /api/users/logout`) |
+| Logout global | Revoga todas as sessões (`POST /api/users/logout-all`) |
+
+**Segurança:** tokens nunca são logados; `token_hash` nunca aparece nas responses.
 
 ---
 
@@ -186,7 +206,9 @@ Contrato completo: [`docs/swagger.json`](docs/swagger.json).
 |--------|------|-----------|
 | `POST` | `/api/users` | Cadastro + tokens |
 | `POST` | `/api/users/login` | Login |
-| `POST` | `/api/users/refresh-token` | Renovar tokens |
+| `POST` | `/api/users/refresh-token` | Renovar tokens (rotação) |
+| `POST` | `/api/users/logout` | Encerrar sessão atual |
+| `POST` | `/api/users/logout-all` | Encerrar todas as sessões (Bearer) |
 
 ### Users (autenticado)
 
@@ -495,7 +517,9 @@ FRONTEND_URL=http://localhost:5173
 | `PORT` | Porta HTTP (Render define automaticamente) |
 | `DATABASE_URL` | Connection string PostgreSQL |
 | `JWT_ACCESS_SECRET` | Segredo do access token (≥ 32 caracteres) |
-| `JWT_REFRESH_SECRET` | Segredo do refresh token (≥ 32 caracteres) |
+| `JWT_REFRESH_SECRET` | Reservado/legado (refresh opaco não usa JWT) |
+| `JWT_ACCESS_EXPIRES_IN` | Expiração do access token (ex.: `15m`) |
+| `JWT_REFRESH_EXPIRES_IN` | Expiração do refresh token (ex.: `7d`) |
 | `FRONTEND_URL` | Origem permitida no CORS (produção) |
 
 Para testes, use `env.test.example` → `.env.test` com banco `finance_app_test` (porta `5434`).
@@ -563,7 +587,6 @@ CI no GitHub Actions valida lint, Prettier, migrations e testes antes do deploy.
 ## Roadmap
 
 - [ ] CRUD de categorias de transação
-- [ ] Refresh token rotation e revogação
 - [ ] Frontend integrado (React/Vue) consumindo a API
 - [ ] Cobertura de testes ampliada (repositórios, edge cases)
 - [ ] CI/CD com ambientes de preview

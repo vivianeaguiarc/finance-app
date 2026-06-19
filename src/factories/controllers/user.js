@@ -6,6 +6,8 @@ import {
     GetUserBalanceController,
     LoginUserController,
     RefreshTokenController,
+    LogoutUserController,
+    LogoutAllSessionsController,
 } from '../../controllers/index.js'
 import {
     GetUserByIdUseCase,
@@ -15,6 +17,8 @@ import {
     GetUserBalanceUseCase,
     LoginUserUseCase,
     RefreshTokenUseCase,
+    LogoutUserUseCase,
+    LogoutAllSessionsUseCase,
 } from '../../use-cases/index.js'
 import {
     PostgresGetUserByIdRepository,
@@ -27,11 +31,10 @@ import {
 import {
     IdGeneratorAdapter,
     PasswordComparatorAdapter,
-    TokensGeneratorAdapter,
     PasswordHasherAdapter,
 } from '../../adapters/index.js'
-import { TokenVerifierAdapter } from '../../adapters/index.js'
 import { getCacheService } from '../../adapters/cache-service.js'
+import { makeAuthTokenService } from '../../services/auth-token-service.factory.js'
 
 export const makeGetUserByIdController = () => {
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
@@ -44,7 +47,7 @@ export const makeCreateUserController = () => {
     const getUserByEmailRepository = new PostgresGetUserByEmailRepository()
     const passwordHasherAdapter = new PasswordHasherAdapter()
     const idGeneratorAdapter = new IdGeneratorAdapter()
-    const tokenGeneratorAdapter = new TokensGeneratorAdapter()
+    const authTokenService = makeAuthTokenService()
     const createUserRepository = new PostgresCreateUserRepository()
 
     const createUserUseCase = new CreateUserUseCase(
@@ -52,7 +55,7 @@ export const makeCreateUserController = () => {
         createUserRepository,
         passwordHasherAdapter,
         idGeneratorAdapter,
-        tokenGeneratorAdapter,
+        authTokenService,
     )
     const createUserController = new CreateUserController(createUserUseCase)
     return createUserController
@@ -92,24 +95,34 @@ export const makeGetUserBalanceController = () => {
     return getUserBalanceController
 }
 export const makeLoginUserController = () => {
-    const tokensGeneratorAdapter = new TokensGeneratorAdapter()
+    const authTokenService = makeAuthTokenService()
     const passwordComparator = new PasswordComparatorAdapter()
     const getUserByEmailRepository = new PostgresGetUserByEmailRepository()
     const loginUserUseCase = new LoginUserUseCase(
         getUserByEmailRepository,
         passwordComparator,
-        tokensGeneratorAdapter,
+        authTokenService,
     )
     const loginUserController = new LoginUserController(loginUserUseCase)
     return loginUserController
 }
 
 export const makeRefreshTokenController = () => {
-    const tokensGeneratorAdapter = new TokensGeneratorAdapter()
-    const tokenVerifierAdapter = new TokenVerifierAdapter()
-    const refreshTokenUseCase = new RefreshTokenUseCase(
-        tokensGeneratorAdapter,
-        tokenVerifierAdapter,
-    )
+    const authTokenService = makeAuthTokenService()
+    const refreshTokenUseCase = new RefreshTokenUseCase(authTokenService)
     return new RefreshTokenController(refreshTokenUseCase)
+}
+
+export const makeLogoutUserController = () => {
+    const authTokenService = makeAuthTokenService()
+    const logoutUserUseCase = new LogoutUserUseCase(authTokenService)
+    return new LogoutUserController(logoutUserUseCase)
+}
+
+export const makeLogoutAllSessionsController = () => {
+    const authTokenService = makeAuthTokenService()
+    const logoutAllSessionsUseCase = new LogoutAllSessionsUseCase(
+        authTokenService,
+    )
+    return new LogoutAllSessionsController(logoutAllSessionsUseCase)
 }

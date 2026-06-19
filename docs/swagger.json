@@ -158,7 +158,7 @@
                                     "email": "ana.silva@example.com",
                                     "tokens": {
                                         "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                                        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                        "refreshToken": "7c9e6679-7425-40de-944b-e07fc1f90ae7.base64url-secret"
                                     }
                                 }
                             }
@@ -245,7 +245,7 @@
                                     "email": "ana.silva@example.com",
                                     "tokens": {
                                         "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                                        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                        "refreshToken": "7c9e6679-7425-40de-944b-e07fc1f90ae7.base64url-secret"
                                     }
                                 }
                             }
@@ -283,7 +283,7 @@
             "post": {
                 "tags": ["Auth"],
                 "summary": "Refresh access token",
-                "description": "Exchanges a valid refresh token for a new access/refresh token pair.",
+                "description": "Rotates the refresh token: returns a new access/refresh pair and invalidates the previous refresh token immediately. Reusing an old refresh token revokes all active sessions for the user.",
                 "security": [],
                 "parameters": [
                     {
@@ -307,7 +307,7 @@
                                 "message": "Token refreshed successfully",
                                 "data": {
                                     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                                    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                    "refreshToken": "7c9e6679-7425-40de-944b-e07fc1f90ae7.base64url-secret"
                                 }
                             }
                         }
@@ -333,6 +333,72 @@
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/logout": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Logout current session",
+                "description": "Revokes the refresh token sent in the request body. The access token remains valid until it expires.",
+                "security": [],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session revoked",
+                        "schema": {
+                            "$ref": "#/definitions/LogoutSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired refresh token",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/logout-all": {
+            "post": {
+                "tags": ["Auth"],
+                "summary": "Logout all sessions",
+                "description": "Revokes every active refresh token session for the authenticated user.",
+                "security": [{ "bearerAuth": [] }],
+                "responses": {
+                    "200": {
+                        "description": "All sessions revoked",
+                        "schema": {
+                            "$ref": "#/definitions/LogoutSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many auth requests",
                         "schema": {
                             "$ref": "#/definitions/ErrorResponse"
                         }
@@ -1233,6 +1299,23 @@
                             "$ref": "#/definitions/AuthTokens"
                         }
                     }
+                }
+            }
+        },
+        "LogoutSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Logged out successfully"
+                },
+                "data": {
+                    "type": "null",
+                    "example": null
                 }
             }
         },

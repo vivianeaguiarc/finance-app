@@ -7,6 +7,8 @@ import {
     makeGetUserBalanceController,
     makeLoginUserController,
     makeRefreshTokenController,
+    makeLogoutUserController,
+    makeLogoutAllSessionsController,
 } from '../factories/controllers/user.js'
 import { auth } from '../middlewares/auth.js'
 import { authLimiter } from '../middlewares/rate-limit.js'
@@ -27,6 +29,22 @@ usersRouter.post('/login', authLimiter, async (req, res) => {
 usersRouter.post('/refresh-token', authLimiter, async (req, res) => {
     const controller = makeRefreshTokenController()
     sendHttpResponse(res, await controller.execute(req))
+})
+
+usersRouter.post('/logout', authLimiter, async (req, res) => {
+    const controller = makeLogoutUserController()
+    sendHttpResponse(res, await controller.execute(req))
+})
+
+usersRouter.post('/logout-all', auth, authLimiter, async (req, res) => {
+    const controller = makeLogoutAllSessionsController()
+    sendHttpResponse(
+        res,
+        await controller.execute({
+            ...req,
+            userId: req.userId,
+        }),
+    )
 })
 
 usersRouter.get('/me', auth, async (req, res) => {

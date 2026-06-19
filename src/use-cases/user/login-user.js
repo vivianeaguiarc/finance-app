@@ -4,19 +4,18 @@ export class LoginUserUseCase {
     constructor(
         getUserByEmailRepository,
         passwordComparator,
-        tokensGeneratorAdapter,
+        authTokenService,
     ) {
         this.getUserByEmailRepository = getUserByEmailRepository
         this.passwordComparator = passwordComparator
-        this.tokensGeneratorAdapter = tokensGeneratorAdapter
+        this.authTokenService = authTokenService
     }
     async execute(email, password) {
-        // Verificar se 0 e-mail e a senha são válidos (se ha usuario com essas credenciais)
         const user = await this.getUserByEmailRepository.execute(email)
         if (!user) {
             throw new UserNotFoundError()
         }
-        // Verificar se a senha recebida é valida
+
         const isPassowrdValid = await this.passwordComparator.execute(
             password,
             user.password,
@@ -24,10 +23,12 @@ export class LoginUserUseCase {
         if (!isPassowrdValid) {
             throw new InvalidPasswordError()
         }
-        // Gerar um token de autenticação
+
+        const tokens = await this.authTokenService.issueTokens(user.id)
+
         return {
             ...user,
-            tokens: this.tokensGeneratorAdapter.execute(user.id),
+            tokens,
         }
     }
 }

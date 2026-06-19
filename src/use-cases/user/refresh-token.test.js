@@ -2,14 +2,8 @@ import { UnauthorizedError } from '../../errors/index.js'
 import { RefreshTokenUseCase } from './refresh-token.js'
 
 describe('Refresh Token Use Case', () => {
-    class TokenVerifierAdapterStub {
-        async execute() {
-            return { userId: 'any_user_id' }
-        }
-    }
-
-    class TokensGeneratorAdapterStub {
-        execute() {
+    class AuthTokenServiceStub {
+        async rotateRefreshToken() {
             return {
                 accessToken: 'any_access_token',
                 refreshToken: 'any_refresh_token',
@@ -18,21 +12,16 @@ describe('Refresh Token Use Case', () => {
     }
 
     const makeSut = () => {
-        const tokenVerifierAdapter = new TokenVerifierAdapterStub()
-        const tokensGeneratorAdapter = new TokensGeneratorAdapterStub()
+        const authTokenService = new AuthTokenServiceStub()
+        const sut = new RefreshTokenUseCase(authTokenService)
 
-        const sut = new RefreshTokenUseCase(
-            tokensGeneratorAdapter,
-            tokenVerifierAdapter,
-        )
-
-        return { sut, tokenVerifierAdapter, tokensGeneratorAdapter }
+        return { sut, authTokenService }
     }
 
     it('should return new tokens', async () => {
         const { sut } = makeSut()
 
-        const result = await sut.execute('any_refresh_token')
+        const result = await sut.execute('session-id.secret')
 
         expect(result).toEqual({
             accessToken: 'any_access_token',
@@ -40,16 +29,14 @@ describe('Refresh Token Use Case', () => {
         })
     })
 
-    it('should throw if tokenVerifierAdapter throws', async () => {
-        const { sut, tokenVerifierAdapter } = makeSut()
+    it('should throw UnauthorizedError when auth token service rejects token', async () => {
+        const { sut, authTokenService } = makeSut()
 
-        import.meta.jest
-            .spyOn(tokenVerifierAdapter, 'execute')
-            .mockImplementationOnce(() => {
-                throw new Error()
-            })
+        jest.spyOn(authTokenService, 'rotateRefreshToken').mockRejectedValueOnce(
+            new UnauthorizedError(),
+        )
 
-        await expect(sut.execute('any_refresh_token')).rejects.toThrow(
+        await expect(sut.execute('invalid-token')).rejects.toThrow(
             UnauthorizedError,
         )
     })

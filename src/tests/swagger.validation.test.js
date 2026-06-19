@@ -32,6 +32,12 @@ describe('swagger.json', () => {
         expect(document.paths['/']).toBeDefined()
         expect(document.paths['/health']?.get).toBeDefined()
         expect(document.paths['/api/transactions/me']?.get).toBeDefined()
+    })
+
+    it('should document auth endpoints including logout', () => {
         expect(document.paths['/api/users/login']?.post).toBeDefined()
+        expect(document.paths['/api/users/refresh-token']?.post).toBeDefined()
+        expect(document.paths['/api/users/logout']?.post).toBeDefined()
+        expect(document.paths['/api/users/logout-all']?.post).toBeDefined()
     })
 })

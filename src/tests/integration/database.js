@@ -39,6 +39,7 @@ export function assertTestDatabase() {
 
 export async function resetDatabase() {
     await prisma.transaction.deleteMany()
+    await prisma.refreshTokenSession.deleteMany()
     await prisma.user.deleteMany()
 }
 
