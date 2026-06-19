@@ -31,6 +31,7 @@ import {
     PasswordHasherAdapter,
 } from '../../adapters/index.js'
 import { TokenVerifierAdapter } from '../../adapters/index.js'
+import { getCacheService } from '../../adapters/cache-service.js'
 
 export const makeGetUserByIdController = () => {
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
@@ -77,11 +78,13 @@ export const makeDeleteUserController = () => {
     return deleteUserController
 }
 export const makeGetUserBalanceController = () => {
+    const cacheService = getCacheService()
     const getUserBalanceRepository = new PostgresGetUserBalanceRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
     const getUserBalanceUseCase = new GetUserBalanceUseCase(
         getUserBalanceRepository,
         getUserByIdRepository,
+        cacheService,
     )
     const getUserBalanceController = new GetUserBalanceController(
         getUserBalanceUseCase,

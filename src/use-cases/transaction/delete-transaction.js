@@ -1,9 +1,14 @@
 import { ForbiddenError, TransactionNotFoundError } from '../../errors/index.js'
 
 export class DeleteTransactionUseCase {
-    constructor(deleteTransactionRepository, getTransactionByIdRepository) {
+    constructor(
+        deleteTransactionRepository,
+        getTransactionByIdRepository,
+        cacheService = null,
+    ) {
         this.deleteTransactionRepository = deleteTransactionRepository
         this.getTransactionByIdRepository = getTransactionByIdRepository
+        this.cacheService = cacheService
     }
     async execute(transactionId, userId) {
         const transaction =
@@ -18,6 +23,10 @@ export class DeleteTransactionUseCase {
         }
 
         await this.deleteTransactionRepository.execute(transactionId, userId)
+
+        if (this.cacheService) {
+            await this.cacheService.invalidateUserCache(userId)
+        }
 
         return transaction
     }

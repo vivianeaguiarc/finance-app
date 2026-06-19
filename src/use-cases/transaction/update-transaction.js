@@ -19,9 +19,14 @@ import { ForbiddenError } from '../../errors/index.js'
 import { TransactionNotFoundError } from '../../errors/transaction.js'
 
 export class UpdateTransactionUseCase {
-    constructor(updateTransactionRepository, getTransactionByIdRepository) {
+    constructor(
+        updateTransactionRepository,
+        getTransactionByIdRepository,
+        cacheService = null,
+    ) {
         this.updateTransactionRepository = updateTransactionRepository
         this.getTransactionByIdRepository = getTransactionByIdRepository
+        this.cacheService = cacheService
     }
 
     async execute(transactionId, params) {
@@ -38,9 +43,16 @@ export class UpdateTransactionUseCase {
             throw new ForbiddenError()
         }
 
-        return await this.updateTransactionRepository.execute(
-            transactionId,
-            updateData,
-        )
+        const updatedTransaction =
+            await this.updateTransactionRepository.execute(
+                transactionId,
+                updateData,
+            )
+
+        if (this.cacheService) {
+            await this.cacheService.invalidateUserCache(user_id)
+        }
+
+        return updatedTransaction
     }
 }

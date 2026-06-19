@@ -118,7 +118,7 @@ flowchart LR
 
 ```
 src/
-├── adapters/          # bcrypt, JWT, geração de ID
+├── adapters/          # bcrypt, JWT, geração de ID, cache Redis
 ├── config/            # CORS, Helmet, logger (Pino)
 ├── controllers/       # Handlers HTTP
 ├── errors/            # Erros de domínio (AppError)
@@ -282,6 +282,53 @@ Erros em produção são logados com stack no servidor, mas **não** expõem sta
 ### Render
 
 No Render, os logs JSON do Pino aparecem automaticamente em **Logs** do serviço web. Use `requestId` para correlacionar uma falha reportada pelo cliente com a linha exata no painel.
+
+---
+
+## Cache (Redis)
+
+Consultas frequentes de leitura usam **Redis** via [ioredis](https://github.com/redis/ioredis), com **fallback in-memory** automático se `REDIS_URL` não estiver definida ou se o Redis estiver indisponível. A API continua funcionando normalmente sem Redis.
+
+### Por que Redis?
+
+- Reduz carga no PostgreSQL em listagens e resumos financeiros repetidos.
+- Melhora latência de endpoints autenticados de leitura.
+- Demonstra estratégia de cache em produção (Render + Redis gerenciado).
+
+### Endpoints com cache
+
+| Endpoint | Chave (padrão) | TTL |
+|----------|----------------|-----|
+| `GET /api/users/me/balance` | `finance-app:user:{userId}:balance:{from}:{to}` | 120s |
+| `GET /api/transactions/me` | `finance-app:user:{userId}:transactions:{filtros}` | 60s |
+| `GET /api/transactions` | (alias da listagem acima) | 60s |
+
+**Não** há cache em: auth, perfil, health, writes ou categorias (CRUD ainda não disponível).
+
+### Invalidação
+
+Qualquer **criação, atualização ou exclusão de transação** invalida todas as chaves do usuário:
+
+`finance-app:user:{userId}:*`
+
+Isso garante que saldo e listagens cacheadas sejam recalculados após mudanças.
+
+### Segurança
+
+- Cache **sempre separado por `userId`** — um usuário nunca recebe dados de outro.
+- Filtros de query entram na chave para evitar respostas incorretas.
+- **Não** cacheamos tokens, senhas, hashes ou headers `Authorization`.
+- Respostas da API **não** expõem detalhes internos do Redis.
+
+### Configuração local
+
+```bash
+docker compose up -d redis
+# .env
+REDIS_URL=redis://localhost:6379
+```
+
+Sem `REDIS_URL`, o fallback in-memory é usado (útil em testes e dev simples).
 
 ---
 

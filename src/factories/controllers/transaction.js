@@ -22,8 +22,10 @@ import {
     GetTransactionBalanceUseCase,
 } from '../../use-cases/index.js'
 import { IdGeneratorAdapter } from '../../adapters/index.js'
+import { getCacheService } from '../../adapters/cache-service.js'
 
 export const makeCreateTransactionController = () => {
+    const cacheService = getCacheService()
     const createTransactionRepository =
         new PostgresCreateTransactionRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
@@ -32,6 +34,7 @@ export const makeCreateTransactionController = () => {
         createTransactionRepository,
         getUserByIdRepository,
         idGeneratorAdapter,
+        cacheService,
     )
     const createTransactionController = new CreateTransactionController(
         createTransactionUseCase,
@@ -39,18 +42,21 @@ export const makeCreateTransactionController = () => {
     return createTransactionController
 }
 export const makeGetTransactionsByUserIdController = () => {
+    const cacheService = getCacheService()
     const getTransactionsByUserIdRepository =
         new PostgresGetTransactionsByUserIdRepository()
     const getUserByIdRepository = new PostgresGetUserByIdRepository()
     const getTransactionsByUserIdUseCase = new GetTransactionByUserIdUseCase(
         getTransactionsByUserIdRepository,
         getUserByIdRepository,
+        cacheService,
     )
     const getTransactionByUserIdController =
         new GetTransactionByUserIdController(getTransactionsByUserIdUseCase)
     return getTransactionByUserIdController
 }
 export const makeUpdateTransactionController = () => {
+    const cacheService = getCacheService()
     const updateTransactionRepository =
         new PostgresUpdateTransactionRepository()
     const getTransactionByIdRepository =
@@ -58,6 +64,7 @@ export const makeUpdateTransactionController = () => {
     const updateTransactionUseCase = new UpdateTransactionUseCase(
         updateTransactionRepository,
         getTransactionByIdRepository,
+        cacheService,
     )
     const updateTransactionController = new UpdateTransactionController(
         updateTransactionUseCase,
@@ -65,6 +72,7 @@ export const makeUpdateTransactionController = () => {
     return updateTransactionController
 }
 export const makeDeleteTransactionController = () => {
+    const cacheService = getCacheService()
     const deleteTransactionRepository =
         new PostgresDeleteTransactionRepository()
     const getTransactionByIdRepository =
@@ -72,6 +80,7 @@ export const makeDeleteTransactionController = () => {
     const deleteTransactionUseCase = new DeleteTransactionUseCase(
         deleteTransactionRepository,
         getTransactionByIdRepository,
+        cacheService,
     )
     const deleteTransactionController = new DeleteTransactionController(
         deleteTransactionUseCase,

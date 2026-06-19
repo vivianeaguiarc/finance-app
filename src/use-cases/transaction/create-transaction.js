@@ -5,10 +5,12 @@ export class CreateTransactionUseCase {
         createTransactionRepository,
         getUserByIdRepository,
         idGeneratorAdapter,
+        cacheService = null,
     ) {
         this.createTransactionRepository = createTransactionRepository
         this.getUserByIdRepository = getUserByIdRepository
         this.idGeneratorAdapter = idGeneratorAdapter
+        this.cacheService = cacheService
     }
     async execute(createTransactionParams) {
         const userId = createTransactionParams.user_id
@@ -21,6 +23,11 @@ export class CreateTransactionUseCase {
             ...createTransactionParams,
             id: transactionId,
         })
+
+        if (this.cacheService) {
+            await this.cacheService.invalidateUserCache(userId)
+        }
+
         return transaction
     }
 }
