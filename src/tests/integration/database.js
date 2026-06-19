@@ -37,6 +37,23 @@ export function assertTestDatabase() {
     }
 }
 
+export async function ensureDatabaseReady() {
+    assertTestDatabase()
+
+    try {
+        await prisma.$queryRaw`SELECT 1`
+    } catch (error) {
+        const databaseUrl = process.env.DATABASE_URL ?? ''
+        const host = databaseUrl.match(/@([^/?]+)/)?.[1] ?? 'database'
+
+        throw new Error(
+            `Integration tests cannot reach PostgreSQL at ${host}. ` +
+                'Start Docker Desktop, then run: npm run docker:test:up && npm run migrations:test',
+            { cause: error },
+        )
+    }
+}
+
 export async function resetDatabase() {
     await prisma.transaction.deleteMany()
     await prisma.refreshTokenSession.deleteMany()

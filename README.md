@@ -40,6 +40,7 @@ Este projeto implementa essa base com foco em **segurança**, **clareza de contr
 | **Usuários** | Cadastro, login, refresh token, perfil (`/me`), atualização e exclusão de conta |
 | **Autenticação** | JWT (access + refresh), rotas protegidas, Bearer no header |
 | **Transações** | CRUD de lançamentos (`EARNING`, `EXPENSE`, `INVESTMENT`) |
+| **Dashboard** | Métricas agregadas em `GET /api/dashboard` (receitas, despesas, saldo, médias, agrupamentos) |
 | **Saldo** | Agregação por período (ganhos, despesas, investimentos, percentuais) |
 | **Listagem** | Paginação (`page`, `limit`), filtros por tipo, período e valor, ordenação com allowlist |
 | **Categorias** | Filtro por `type` (tipo de transação). *CRUD de categorias ainda não implementado — ver Roadmap* |
@@ -137,6 +138,7 @@ src/
 │   │   └── auth.composition.js
 │   ├── users/             # Perfil e saldo (/me)
 │   ├── transactions/      # CRUD de lançamentos
+│   ├── dashboard/         # Métricas agregadas
 │   ├── categories/        # Placeholder (CRUD futuro)
 │   └── health/            # Health check com repository
 ├── shared/
@@ -165,6 +167,56 @@ docs/
 ```
 
 > **Migração incremental:** pastas legadas (`controllers/`, `use-cases/`, `repositories/`, `factories/`) permanecem como implementação física; os módulos agrupam responsabilidades e expõem o padrão Route → Middleware → Controller → Service → Repository → Prisma. A remoção das pastas antigas pode ocorrer em etapas futuras, módulo a módulo.
+
+---
+
+## Dashboard Financeiro
+
+Endpoint protegido: **`GET /api/dashboard`**
+
+Retorna métricas agregadas **somente do usuário autenticado** (JWT). Não existe parâmetro de rota para consultar outro usuário — o `userId` vem exclusivamente do token.
+
+### Métricas (`data.summary`)
+
+| Campo | Descrição |
+|-------|-----------|
+| `totalEarnings` | Soma de receitas (`EARNING`) |
+| `totalExpenses` | Soma de despesas (`EXPENSE`) |
+| `totalInvestments` | Soma de investimentos (`INVESTMENT`) |
+| `balance` | Saldo = receitas − despesas − investimentos |
+| `transactionCount` | Quantidade de transações no período/filtro |
+| `highestEarning` | Maior receita individual |
+| `highestExpense` | Maior despesa individual |
+| `averageEarning` | Média de receitas |
+| `averageExpense` | Média de despesas |
+
+### Agrupamentos
+
+| Campo | Descrição |
+|-------|-----------|
+| `byCategory` | Totais por nome da transação (categoria provisória até CRUD de categorias) |
+| `byMonth` | Totais mensais (`YYYY-MM`) |
+| `byType` | Totais por tipo (`EARNING`, `EXPENSE`, `INVESTMENT`) |
+
+### Filtros (query params)
+
+| Param | Descrição |
+|-------|-----------|
+| `startDate` / `endDate` | Período ISO 8601 |
+| `month` / `year` | Atalho por mês/ano (não combinar com `startDate`/`endDate`) |
+| `type` | `EARNING`, `EXPENSE` ou `INVESTMENT` |
+| `categoryId` | Filtra pelo **nome** da transação (categoria provisória) |
+
+### Cache
+
+Respostas do dashboard são cacheadas por usuário e filtros (TTL 60s, Redis ou fallback in-memory). O cache é **invalidado automaticamente** quando transações são criadas, atualizadas ou excluídas (`invalidateUserCache`).
+
+Exemplo:
+
+```http
+GET /api/dashboard?month=6&year=2025
+Authorization: Bearer <accessToken>
+```
 
 ---
 
@@ -676,7 +728,7 @@ Stack: **Jest + Supertest**. Cobertura em camadas (controllers, use cases, schem
 # Banco de teste
 npm run docker:test:up
 cp env.test.example .env.test
-dotenv -e .env.test -- npx prisma migrate deploy
+npm run migrations:test
 
 # Rodar todos os testes
 npm test
@@ -700,6 +752,22 @@ Os testes de integração limpam `users` e `transactions` entre casos e **recusa
 
 CI no GitHub Actions valida lint, Prettier, migrations e testes antes do deploy.
 
+### CI — job `migrate` (produção)
+
+O job `migrate` (apenas em `main`) aplica migrations no banco de produção **antes** do deploy hook do Render.
+
+| Secret (environment `production`) | Obrigatório | Descrição |
+|-----------------------------------|-------------|-----------|
+| `DATABASE_URL` | Sim | Connection string completa do Neon/Render (`postgresql://USER:PASSWORD@HOST/DB`) |
+| `DIRECT_DATABASE_URL` | Não | URL **direct** (sem `-pooler`) do Neon; se omitida, o CI converte automaticamente |
+| `RENDER_DEPLOY_HOOK_URL` | Sim (deploy) | Hook de deploy do Render |
+
+**Erro `P1000: Authentication failed`**
+
+1. Confirme que `DATABASE_URL` no GitHub → **Settings → Environments → production** contém a string **completa** copiada do Neon (não use placeholders como `${USER}`).
+2. Se a URL usa host `-pooler`, o script `scripts/prisma-migrate-deploy.js` converte para conexão direct; alternativamente, configure `DIRECT_DATABASE_URL` com a URL direct do Neon.
+3. Se a senha foi rotacionada no Neon, atualize o secret no GitHub.
+
 ---
 
 ## Scripts npm
@@ -710,7 +778,7 @@ CI no GitHub Actions valida lint, Prettier, migrations e testes antes do deploy.
 | `npm run dev` | Desenvolvimento (`--watch`) |
 | `npm test` | Testes unitários + integração |
 | `npm run test:ci` | Testes com coverage (CI) |
-| `npm run migrations` | `prisma migrate deploy` |
+| `npm run migrations` | `prisma migrate deploy` (com suporte Neon direct) |
 | `npm run eslint:check` | ESLint |
 | `npm run prettier:check` | Prettier (check) |
 | `npm run format` | Prettier (write) |

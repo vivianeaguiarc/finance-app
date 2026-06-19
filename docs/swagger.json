@@ -30,6 +30,10 @@
             "description": "Create, list (paginated), update and delete financial transactions. Requires Bearer token."
         },
         {
+            "name": "Dashboard",
+            "description": "Aggregated financial metrics for the authenticated user. Requires Bearer token."
+        },
+        {
             "name": "Categories",
             "description": "Category management is not available in the current API version. The `categoryId` query filter is rejected with HTTP 400."
         }
@@ -624,6 +628,94 @@
                 }
             }
         },
+        "/api/dashboard": {
+            "get": {
+                "tags": ["Dashboard"],
+                "summary": "Financial dashboard metrics",
+                "description": "Returns aggregated financial metrics for the authenticated user only. Supports period and category filters. The `categoryId` filter matches the transaction category name until dedicated Category CRUD is available.",
+                "security": [{ "bearerAuth": [] }],
+                "parameters": [
+                    { "$ref": "#/parameters/StartDateParam" },
+                    { "$ref": "#/parameters/EndDateParam" },
+                    { "$ref": "#/parameters/DashboardMonthParam" },
+                    { "$ref": "#/parameters/DashboardYearParam" },
+                    { "$ref": "#/parameters/DashboardCategoryIdParam" },
+                    { "$ref": "#/parameters/TypeParam" }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dashboard metrics",
+                        "schema": {
+                            "$ref": "#/definitions/DashboardResponse"
+                        },
+                        "examples": {
+                            "application/json": {
+                                "success": true,
+                                "message": "Dashboard retrieved successfully",
+                                "data": {
+                                    "summary": {
+                                        "totalEarnings": "2500.00",
+                                        "totalExpenses": "900.00",
+                                        "totalInvestments": "300.00",
+                                        "balance": "1300.00",
+                                        "transactionCount": 8,
+                                        "highestEarning": "1500.00",
+                                        "highestExpense": "400.00",
+                                        "averageEarning": "833.33",
+                                        "averageExpense": "300.00"
+                                    },
+                                    "byCategory": [
+                                        {
+                                            "categoryId": "Salary",
+                                            "categoryName": "Salary",
+                                            "type": "EARNING",
+                                            "totalAmount": "2500.00",
+                                            "count": 2
+                                        }
+                                    ],
+                                    "byMonth": [
+                                        {
+                                            "month": "2025-06",
+                                            "totalEarnings": "2500.00",
+                                            "totalExpenses": "900.00",
+                                            "totalInvestments": "300.00",
+                                            "balance": "1300.00",
+                                            "count": 8
+                                        }
+                                    ],
+                                    "byType": [
+                                        {
+                                            "type": "EARNING",
+                                            "totalAmount": "2500.00",
+                                            "count": 2,
+                                            "averageAmount": "1250.00"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transactions/me": {
             "get": {
                 "tags": ["Transactions"],
@@ -1126,7 +1218,33 @@
             "required": false,
             "type": "string",
             "format": "uuid",
-            "description": "Not supported — returns 400. Category APIs are planned (see Categories tag)."
+            "description": "Not supported on transaction list — returns 400. Use `/api/dashboard` with category name filter instead."
+        },
+        "DashboardMonthParam": {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12,
+            "description": "Filter by calendar month (1-12). Use with `year` or defaults to current year."
+        },
+        "DashboardYearParam": {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "minimum": 1970,
+            "maximum": 2100,
+            "description": "Filter by calendar year. Can be combined with `month`."
+        },
+        "DashboardCategoryIdParam": {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "maxLength": 50,
+            "description": "Filter by category name (transaction name) until Category CRUD is available."
         }
     },
     "definitions": {
@@ -1205,7 +1323,10 @@
                                     "properties": {
                                         "status": {
                                             "type": "string",
-                                            "enum": ["connected", "disconnected"],
+                                            "enum": [
+                                                "connected",
+                                                "disconnected"
+                                            ],
                                             "example": "connected"
                                         }
                                     }
@@ -1457,6 +1578,85 @@
                 "data": {
                     "$ref": "#/definitions/BalanceData"
                 }
+            }
+        },
+        "DashboardSummary": {
+            "type": "object",
+            "properties": {
+                "totalEarnings": { "type": "string", "example": "2500.00" },
+                "totalExpenses": { "type": "string", "example": "900.00" },
+                "totalInvestments": { "type": "string", "example": "300.00" },
+                "balance": { "type": "string", "example": "1300.00" },
+                "transactionCount": { "type": "integer", "example": 8 },
+                "highestEarning": { "type": "string", "example": "1500.00" },
+                "highestExpense": { "type": "string", "example": "400.00" },
+                "averageEarning": { "type": "string", "example": "833.33" },
+                "averageExpense": { "type": "string", "example": "300.00" }
+            }
+        },
+        "DashboardCategoryGroup": {
+            "type": "object",
+            "properties": {
+                "categoryId": { "type": "string", "example": "Salary" },
+                "categoryName": { "type": "string", "example": "Salary" },
+                "type": {
+                    "type": "string",
+                    "enum": ["EARNING", "EXPENSE", "INVESTMENT"]
+                },
+                "totalAmount": { "type": "string", "example": "2500.00" },
+                "count": { "type": "integer", "example": 2 }
+            }
+        },
+        "DashboardMonthGroup": {
+            "type": "object",
+            "properties": {
+                "month": { "type": "string", "example": "2025-06" },
+                "totalEarnings": { "type": "string", "example": "2500.00" },
+                "totalExpenses": { "type": "string", "example": "900.00" },
+                "totalInvestments": { "type": "string", "example": "300.00" },
+                "balance": { "type": "string", "example": "1300.00" },
+                "count": { "type": "integer", "example": 8 }
+            }
+        },
+        "DashboardTypeGroup": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["EARNING", "EXPENSE", "INVESTMENT"]
+                },
+                "totalAmount": { "type": "string", "example": "2500.00" },
+                "count": { "type": "integer", "example": 2 },
+                "averageAmount": { "type": "string", "example": "1250.00" }
+            }
+        },
+        "DashboardData": {
+            "type": "object",
+            "properties": {
+                "summary": { "$ref": "#/definitions/DashboardSummary" },
+                "byCategory": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/DashboardCategoryGroup" }
+                },
+                "byMonth": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/DashboardMonthGroup" }
+                },
+                "byType": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/DashboardTypeGroup" }
+                }
+            }
+        },
+        "DashboardResponse": {
+            "type": "object",
+            "properties": {
+                "success": { "type": "boolean", "example": true },
+                "message": {
+                    "type": "string",
+                    "example": "Dashboard retrieved successfully"
+                },
+                "data": { "$ref": "#/definitions/DashboardData" }
             }
         },
         "RegisterUserRequest": {

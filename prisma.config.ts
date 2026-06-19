@@ -10,6 +10,21 @@ function getDatabaseUrl() {
     return 'postgresql://postgres:password@localhost:5432/finance_app'
 }
 
+function getDirectDatabaseUrl() {
+    if (process.env.DIRECT_DATABASE_URL) {
+        return process.env.DIRECT_DATABASE_URL
+    }
+
+    const url = getDatabaseUrl()
+
+    // Neon pooler host → direct host for Prisma CLI (migrate, introspect, etc.)
+    if (url.includes('-pooler.')) {
+        return url.replace('-pooler.', '.')
+    }
+
+    return url
+}
+
 export default defineConfig({
     schema: 'prisma/schema.prisma',
     migrations: {
@@ -18,5 +33,6 @@ export default defineConfig({
     engine: 'classic',
     datasource: {
         url: getDatabaseUrl(),
+        directUrl: getDirectDatabaseUrl(),
     },
 })

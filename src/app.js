@@ -1,6 +1,10 @@
 import express from 'express'
 import cors from 'cors'
-import { usersRouter, transactionsRouter } from './routes/index.js'
+import {
+    usersRouter,
+    transactionsRouter,
+    dashboardRouter,
+} from './routes/index.js'
 import { healthHandler } from './modules/health/health.controller.js'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
@@ -38,6 +42,7 @@ app.get('/health', healthHandler)
 
 app.use('/api/users', usersRouter)
 app.use('/api/transactions', transactionsRouter)
+app.use('/api/dashboard', dashboardRouter)
 
 const swaggerPath = join(process.cwd(), 'docs', 'swagger.json')
 const swaggerDocument = JSON.parse(fs.readFileSync(swaggerPath, 'utf-8'))

@@ -1,5 +1,6 @@
 import {
     buildBalanceCacheKey,
+    buildDashboardCacheKey,
     buildTransactionsCacheKey,
     buildUserCachePattern,
     CACHE_TTL,
@@ -28,6 +29,18 @@ describe('cache-keys', () => {
         expect(keyA).toContain('finance-app:user:user-1:transactions:')
     })
 
+    it('should include dashboard filters in cache keys', () => {
+        const key = buildDashboardCacheKey('user-1', {
+            month: 6,
+            year: 2025,
+            type: 'EXPENSE',
+        })
+
+        expect(key).toBe(
+            'finance-app:user:user-1:dashboard:categoryId=all&endDate=all&month=6&startDate=all&type=EXPENSE&year=2025',
+        )
+    })
+
     it('should expose invalidation pattern per user', () => {
         expect(buildUserCachePattern('user-1')).toBe(
             'finance-app:user:user-1:*',
@@ -39,5 +52,6 @@ describe('cache-keys', () => {
         expect(CACHE_TTL.balance).toBeLessThanOrEqual(300)
         expect(CACHE_TTL.transactions).toBeGreaterThanOrEqual(60)
         expect(CACHE_TTL.transactions).toBeLessThanOrEqual(300)
+        expect(CACHE_TTL.dashboard).toBe(60)
     })
 })

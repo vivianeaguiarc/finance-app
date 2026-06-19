@@ -20,6 +20,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:password@localhost:5432/finance_app_test
+      DIRECT_DATABASE_URL: postgresql://postgres:password@localhost:5432/finance_app_test
       NODE_ENV: test
       JWT_ACCESS_SECRET: test_access_secret
       JWT_REFRESH_SECRET: test_refresh_secret
@@ -74,15 +75,7 @@ jobs:
         run: npx prisma generate
 
       - name: Apply Prisma schema
-        run: |
-          set -e
-          if [ -d prisma/migrations ] && [ "$(ls -A prisma/migrations)" ]; then
-            echo "Found migrations → prisma migrate deploy"
-            npx prisma migrate deploy
-          else
-            echo "No migrations → prisma db push"
-            npx prisma db push --accept-data-loss
-          fi
+        run: node scripts/prisma-migrate-deploy.js
 
       - name: Run tests (CI)
         run: npm run test:ci
@@ -93,6 +86,10 @@ jobs:
     needs: check
     if: github.ref == 'refs/heads/main'
     environment: production
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
 
     steps:
       - name: Checkout code
@@ -107,18 +104,13 @@ jobs:
       - name: Install dependencies (disable husky)
         env:
           HUSKY: 0
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm ci --no-audit --no-fund
 
       - name: Prisma generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
       - name: Run migrations
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx prisma migrate deploy
+        run: node scripts/prisma-migrate-deploy.js
 
   deploy:
     name: Deploy to Production

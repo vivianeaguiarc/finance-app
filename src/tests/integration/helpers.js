@@ -64,10 +64,10 @@ export const findTransactionById = (listResponse, transactionId) =>
 
 export const useIntegrationTestHooks = () => {
     beforeAll(async () => {
-        const { assertTestDatabase, resetDatabase } = await import(
+        const { ensureDatabaseReady, resetDatabase } = await import(
             './database.js'
         )
-        assertTestDatabase()
+        await ensureDatabaseReady()
         await resetDatabase()
     })
 

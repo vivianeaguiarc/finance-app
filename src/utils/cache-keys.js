@@ -3,6 +3,7 @@ export const CACHE_PREFIX = 'finance-app'
 export const CACHE_TTL = {
     balance: 120,
     transactions: 60,
+    dashboard: 60,
 }
 
 function normalizeDate(value) {
@@ -15,6 +16,24 @@ function normalizeDate(value) {
 
 export function buildBalanceCacheKey(userId, from, to) {
     return `${CACHE_PREFIX}:user:${userId}:balance:${normalizeDate(from)}:${normalizeDate(to)}`
+}
+
+export function buildDashboardCacheKey(userId, query = {}) {
+    const normalized = {
+        startDate: normalizeDate(query.startDate),
+        endDate: normalizeDate(query.endDate),
+        month: query.month ?? 'all',
+        year: query.year ?? 'all',
+        categoryId: query.categoryId ?? 'all',
+        type: query.type ?? 'all',
+    }
+
+    const filters = Object.keys(normalized)
+        .sort()
+        .map((key) => `${key}=${normalized[key]}`)
+        .join('&')
+
+    return `${CACHE_PREFIX}:user:${userId}:dashboard:${filters}`
 }
 
 export function buildTransactionsCacheKey(userId, query = {}) {

@@ -28,9 +28,10 @@ describe('swagger.json', () => {
         expect(userResponse.properties.passwordHash).toBeUndefined()
     })
 
-    it('should document health and transaction list endpoints', () => {
+    it('should document health, dashboard and transaction list endpoints', () => {
         expect(document.paths['/']).toBeDefined()
         expect(document.paths['/health']?.get).toBeDefined()
+        expect(document.paths['/api/dashboard']?.get).toBeDefined()
         expect(document.paths['/api/transactions/me']?.get).toBeDefined()
     })
 
