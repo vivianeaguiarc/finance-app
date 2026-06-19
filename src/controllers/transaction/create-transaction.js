@@ -23,7 +23,7 @@ export class CreateTransactionController {
                 return userNotFoundResponse()
             }
 
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

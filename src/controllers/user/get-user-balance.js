@@ -32,7 +32,7 @@ export class GetUserBalanceController {
                 return userNotFoundResponse()
             }
 
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

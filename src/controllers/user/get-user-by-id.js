@@ -34,7 +34,7 @@ export class GetUserByIdController {
             }
             return ok(sanitizeUser(user), 'User retrieved successfully')
         } catch (error) {
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

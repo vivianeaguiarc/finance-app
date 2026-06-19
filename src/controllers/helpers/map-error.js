@@ -4,7 +4,7 @@ import { mapPrismaError } from '../../utils/prisma-error-mapper.js'
 import { logInternalError } from '../../middlewares/error-handler.js'
 import { badRequest, serverError } from './http.js'
 
-export function mapErrorToHttpResponse(error) {
+export function mapErrorToHttpResponse(error, req) {
     if (error instanceof AppError) {
         return {
             statusCode: error.statusCode,
@@ -26,6 +26,13 @@ export function mapErrorToHttpResponse(error) {
         return prismaError
     }
 
-    logInternalError(error)
-    return serverError()
+    logInternalError(error, req)
+    const response = serverError()
+    if (req?.id) {
+        return {
+            ...response,
+            body: { ...response.body, requestId: req.id },
+        }
+    }
+    return response
 }

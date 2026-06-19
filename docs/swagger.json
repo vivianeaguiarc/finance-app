@@ -43,11 +43,67 @@
         }
     },
     "paths": {
+        "/health": {
+            "get": {
+                "tags": ["Health"],
+                "summary": "Professional health check",
+                "description": "Returns API status, environment, uptime, timestamp and PostgreSQL connectivity. Responds with HTTP 503 when the database is unavailable.",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "Service is healthy",
+                        "schema": {
+                            "$ref": "#/definitions/HealthCheckResponse"
+                        },
+                        "examples": {
+                            "application/json": {
+                                "success": true,
+                                "message": "Service is healthy",
+                                "data": {
+                                    "status": "ok",
+                                    "environment": "production",
+                                    "uptime": 3600,
+                                    "timestamp": "2025-06-19T12:00:00.000Z",
+                                    "database": {
+                                        "status": "connected"
+                                    },
+                                    "docs": "/docs"
+                                },
+                                "requestId": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service degraded — database unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/HealthCheckResponse"
+                        },
+                        "examples": {
+                            "application/json": {
+                                "success": false,
+                                "message": "Service degraded — database unavailable",
+                                "data": {
+                                    "status": "degraded",
+                                    "environment": "production",
+                                    "uptime": 3600,
+                                    "timestamp": "2025-06-19T12:00:00.000Z",
+                                    "database": {
+                                        "status": "disconnected"
+                                    },
+                                    "docs": "/docs"
+                                },
+                                "requestId": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/": {
             "get": {
                 "tags": ["Health"],
-                "summary": "Health check",
-                "description": "Returns API status and link to interactive documentation.",
+                "summary": "API discovery",
+                "description": "Lightweight status endpoint with links to documentation and health check.",
                 "security": [],
                 "responses": {
                     "200": {
@@ -60,7 +116,8 @@
                                 "success": true,
                                 "message": "FinanceApp API is running",
                                 "data": {
-                                    "docs": "/docs"
+                                    "docs": "/docs",
+                                    "health": "/health"
                                 }
                             }
                         }
@@ -1043,6 +1100,59 @@
                     "description": "Machine-readable error code (e.g. VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, EMAIL_ALREADY_IN_USE, TOO_MANY_REQUESTS)"
                 }
             }
+        },
+        "HealthCheckResponse": {
+            "allOf": [
+                { "$ref": "#/definitions/SuccessResponse" },
+                {
+                    "type": "object",
+                    "properties": {
+                        "requestId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Correlation ID for the request (also sent as X-Request-Id header)."
+                        },
+                        "data": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": ["ok", "degraded"],
+                                    "example": "ok"
+                                },
+                                "environment": {
+                                    "type": "string",
+                                    "example": "production"
+                                },
+                                "uptime": {
+                                    "type": "integer",
+                                    "description": "Process uptime in seconds",
+                                    "example": 3600
+                                },
+                                "timestamp": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2025-06-19T12:00:00.000Z"
+                                },
+                                "database": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": ["connected", "disconnected"],
+                                            "example": "connected"
+                                        }
+                                    }
+                                },
+                                "docs": {
+                                    "type": "string",
+                                    "example": "/docs"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
         },
         "HealthResponse": {
             "allOf": [

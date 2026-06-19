@@ -34,7 +34,7 @@ export class DeleteUserController {
                 return userNotFoundResponse()
             }
 
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

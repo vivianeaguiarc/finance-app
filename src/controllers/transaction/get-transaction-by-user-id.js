@@ -38,7 +38,7 @@ export class GetTransactionByUserIdController {
                 return userNotFoundResponse()
             }
 
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

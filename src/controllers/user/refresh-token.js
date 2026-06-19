@@ -25,7 +25,7 @@ export class RefreshTokenController {
                 )
             }
 
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

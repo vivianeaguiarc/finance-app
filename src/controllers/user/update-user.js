@@ -36,7 +36,7 @@ export class UpdateUserController {
 
             return ok(sanitizeUser(updatedUser), 'User updated successfully')
         } catch (error) {
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

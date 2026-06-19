@@ -28,7 +28,7 @@ export class DeleteTransactionController {
 
             return ok(deletedTransaction, 'Transaction deleted successfully')
         } catch (error) {
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

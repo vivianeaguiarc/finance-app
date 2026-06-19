@@ -28,7 +28,7 @@ export class UpdateTransactionController {
 
             return ok(transaction, 'Transaction updated successfully')
         } catch (error) {
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

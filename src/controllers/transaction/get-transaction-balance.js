@@ -12,7 +12,7 @@ export class GetTransactionBalanceController {
                 await this.getTransactionBalanceUseCase.execute(userId)
             return ok(result, 'Transaction balance retrieved successfully')
         } catch (error) {
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

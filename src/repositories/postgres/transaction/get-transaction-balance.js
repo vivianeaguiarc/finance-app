@@ -1,4 +1,5 @@
 import { prisma } from '../../../../prisma/prisma.js'
+import { logger } from '../../../config/logger.js'
 
 export class PostgresGetTransactionBalanceRepository {
     async execute(userId) {
@@ -30,7 +31,10 @@ export class PostgresGetTransactionBalanceRepository {
                 balance: balance.toString(),
             }
         } catch (error) {
-            console.error('❌ Erro ao calcular saldo de transações:', error)
+            logger.error(
+                { err: error, userId },
+                'Failed to calculate transaction balance',
+            )
             throw error
         }
     }

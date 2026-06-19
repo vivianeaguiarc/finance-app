@@ -19,7 +19,7 @@ export class CreateUserController {
                 'User created successfully',
             )
         } catch (error) {
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

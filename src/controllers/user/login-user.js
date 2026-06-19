@@ -31,7 +31,7 @@ export class LoginUserController {
                 return unauthorized()
             }
 
-            return mapErrorToHttpResponse(error)
+            return mapErrorToHttpResponse(error, httpRequest)
         }
     }
 }

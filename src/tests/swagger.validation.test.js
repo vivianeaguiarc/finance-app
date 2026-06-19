@@ -30,6 +30,7 @@ describe('swagger.json', () => {
 
     it('should document health and transaction list endpoints', () => {
         expect(document.paths['/']).toBeDefined()
+        expect(document.paths['/health']?.get).toBeDefined()
         expect(document.paths['/api/transactions/me']?.get).toBeDefined()
         expect(document.paths['/api/users/login']?.post).toBeDefined()
     })

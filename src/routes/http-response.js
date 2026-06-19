@@ -3,5 +3,13 @@ export function sendHttpResponse(res, { statusCode, body }) {
         return res.status(204).send()
     }
 
-    return res.status(statusCode).json(body)
+    const payload =
+        body &&
+        typeof body === 'object' &&
+        body.success === false &&
+        res.locals.requestId
+            ? { ...body, requestId: res.locals.requestId }
+            : body
+
+    return res.status(statusCode).json(payload)
 }
