@@ -4,9 +4,16 @@ import { UserNotFoundError } from '../../errors/user.js'
 import { user } from '../../tests/fixtures/index.js'
 
 describe('GetTransactionByUserIdUseCase', () => {
+    const defaultQuery = {
+        page: 1,
+        limit: 10,
+        sortBy: 'date',
+        sortOrder: 'desc',
+    }
+
     class GetTransactionByUserIdRepositoryStub {
         async execute() {
-            return []
+            return { items: [], total: 0 }
         }
     }
     class GetUserByIdRepositoryStub {
@@ -31,8 +38,8 @@ describe('GetTransactionByUserIdUseCase', () => {
     it('should get transactions by user id successfully', async () => {
         const { sut } = makeSut()
         const userId = faker.string.uuid()
-        const result = await sut.execute(userId)
-        expect(result).toEqual([])
+        const result = await sut.execute(userId, defaultQuery)
+        expect(result).toEqual({ items: [], total: 0 })
     })
     it('should throw UserNotFoundError if user does not exist', async () => {
         const { sut, getUserByIdRepository } = makeSut()
@@ -40,11 +47,11 @@ describe('GetTransactionByUserIdUseCase', () => {
             .spyOn(getUserByIdRepository, 'execute')
             .mockResolvedValueOnce(null)
         const id = faker.string.uuid()
-        const promise = sut.execute(id)
-        await expect(promise).rejects.toThrow(new UserNotFoundError(id))
+        const promise = sut.execute(id, defaultQuery)
+        await expect(promise).rejects.toThrow(UserNotFoundError)
     })
 
-    it('should call GetTransactionByUserIdRepository with correct param', async () => {
+    it('should call GetTransactionByUserIdRepository with correct params', async () => {
         const { sut, getTransactionByUserIdRepository } = makeSut()
 
         const userId = faker.string.uuid()
@@ -54,13 +61,9 @@ describe('GetTransactionByUserIdUseCase', () => {
             'execute',
         )
 
-        await sut.execute(userId)
+        await sut.execute(userId, defaultQuery)
 
-        expect(getByUserIdSpy).toHaveBeenCalledWith(
-            userId,
-            undefined,
-            undefined,
-        )
+        expect(getByUserIdSpy).toHaveBeenCalledWith(userId, defaultQuery)
     })
 
     it('shoult throw if GetTransactionByUserIdRepository throws', async () => {
@@ -68,7 +71,7 @@ describe('GetTransactionByUserIdUseCase', () => {
         import.meta.jest
             .spyOn(getTransactionByUserIdRepository, 'execute')
             .mockRejectedValueOnce(new Error())
-        const promise = sut.execute(faker.string.uuid())
+        const promise = sut.execute(faker.string.uuid(), defaultQuery)
         await expect(promise).rejects.toThrow()
     })
 })

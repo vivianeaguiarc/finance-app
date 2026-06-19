@@ -281,40 +281,116 @@
         },
         "/api/transactions/me": {
             "get": {
-                "summary": "Get authenticated user transactions",
+                "summary": "Get authenticated user transactions (paginated)",
                 "tags": ["Transaction"],
                 "parameters": [
                     {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "description": "Page number (default: 1)",
+                        "type": "integer",
+                        "default": 1,
+                        "minimum": 1
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "description": "Items per page (default: 10, max: 100)",
+                        "type": "integer",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "description": "Filter by transaction type",
+                        "type": "string",
+                        "enum": ["EARNING", "EXPENSE", "INVESTMENT"]
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "required": false,
+                        "description": "Start date filter (ISO 8601)",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00.000Z"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "required": false,
+                        "description": "End date filter (ISO 8601)",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-12-31T23:59:59.999Z"
+                    },
+                    {
                         "name": "from",
                         "in": "query",
-                        "required": true,
-                        "description": "Start date for the transactions query (format: YYYY-MM-DD)",
-                        "schema": {
-                            "type": "string",
-                            "format": "date",
-                            "example": "2024-01-01"
-                        }
+                        "required": false,
+                        "description": "Legacy alias for startDate",
+                        "type": "string",
+                        "example": "2024-01-01"
                     },
                     {
                         "name": "to",
                         "in": "query",
-                        "required": true,
-                        "description": "End date for the transactions query (format: YYYY-MM-DD)",
-                        "schema": {
-                            "type": "string",
-                            "format": "date",
-                            "example": "2024-01-01"
-                        }
+                        "required": false,
+                        "description": "Legacy alias for endDate",
+                        "type": "string",
+                        "example": "2024-12-31"
+                    },
+                    {
+                        "name": "minAmount",
+                        "in": "query",
+                        "required": false,
+                        "description": "Minimum amount filter",
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    {
+                        "name": "maxAmount",
+                        "in": "query",
+                        "required": false,
+                        "description": "Maximum amount filter",
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    {
+                        "name": "sortBy",
+                        "in": "query",
+                        "required": false,
+                        "description": "Sort field (allowlist)",
+                        "type": "string",
+                        "enum": ["date", "amount", "createdAt"],
+                        "default": "date"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "in": "query",
+                        "required": false,
+                        "description": "Sort direction",
+                        "type": "string",
+                        "enum": ["asc", "desc"],
+                        "default": "desc"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Transactions found",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Transaction"
-                            }
+                            "$ref": "#/definitions/PaginatedTransactionList"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/InvalidParamResponse"
                         }
                     },
                     "404": {
@@ -689,6 +765,59 @@
                 "amount": {
                     "type": "string",
                     "example": "1000"
+                },
+                "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T00:00:00.000Z"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T12:00:00.000Z"
+                }
+            }
+        },
+        "PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "totalPages": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "PaginatedTransactionList": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Transactions retrieved successfully"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Transaction"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/PaginationMeta"
                 }
             }
         },

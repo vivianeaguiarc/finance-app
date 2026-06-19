@@ -1,10 +1,11 @@
-import { getTransactionsByUserIdSchema } from '../../schemas/transaction.js'
+import { listTransactionsQuerySchema } from '../../schemas/transaction.js'
 import {
-    ok,
+    okPaginated,
     userNotFoundResponse,
     mapErrorToHttpResponse,
 } from '../helpers/index.js'
 import { UserNotFoundError } from '../../errors/index.js'
+import { buildPaginationMeta } from '../../utils/transaction-query.js'
 
 export class GetTransactionByUserIdController {
     constructor(getTransactionByUserIdUseCase) {
@@ -14,22 +15,27 @@ export class GetTransactionByUserIdController {
     async execute(httpRequest) {
         try {
             const userId = httpRequest.userId
-            const { from, to } = httpRequest.query
+            const { userId: _ignoredUserId, ...queryParams } =
+                httpRequest.query ?? {}
 
-            await getTransactionsByUserIdSchema.parse({
+            const query = await listTransactionsQuerySchema.parseAsync({
+                ...queryParams,
                 userId,
-                from,
-                to,
             })
 
-            const transactions =
+            const { items, total } =
                 await this.getTransactionByUserIdUseCase.execute(
                     userId,
-                    from,
-                    to,
+                    query,
                 )
 
-            return ok(transactions, 'Transactions retrieved successfully')
+            const meta = buildPaginationMeta(query.page, query.limit, total)
+
+            return okPaginated(
+                items,
+                meta,
+                'Transactions retrieved successfully',
+            )
         } catch (error) {
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()

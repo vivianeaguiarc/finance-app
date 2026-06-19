@@ -32,10 +32,8 @@ transactionsRouter.get('/me', auth, async (request, response) => {
     sendHttpResponse(
         response,
         await controller.execute({
-            ...request,
             userId: request.userId,
-            params: { userId: request.userId },
-            query: request.query,
+            query: request.query ?? {},
         }),
     )
 })
@@ -45,9 +43,8 @@ transactionsRouter.get('/', auth, async (request, response) => {
     sendHttpResponse(
         response,
         await controller.execute({
-            ...request,
             userId: request.userId,
-            query: request.query,
+            query: request.query ?? {},
         }),
     )
 })
@@ -74,10 +71,11 @@ transactionsRouter.patch(
         sendHttpResponse(
             response,
             await controller.execute({
-                ...request,
-                userId: request.userId,
+                params: {
+                    transactionId: request.params.transactionId,
+                },
                 body: {
-                    ...request.params,
+                    ...request.body,
                     user_id: request.userId,
                 },
             }),

@@ -10,7 +10,7 @@ describe('Get Transaction By User Id Controller', () => {
 
     class GetUserByIdUseCasesStub {
         async execute() {
-            return [transaction]
+            return { items: [transaction], total: 1 }
         }
     }
 
@@ -29,6 +29,13 @@ describe('Get Transaction By User Id Controller', () => {
         const { sut } = makeSut()
         const response = await sut.execute(baseHttpRequest)
         expect(response.statusCode).toBe(200)
+        expect(response.body.data).toEqual([transaction])
+        expect(response.body.meta).toEqual({
+            page: 1,
+            limit: 10,
+            total: 1,
+            totalPages: 1,
+        })
     })
 
     it('should return 400 when userId from auth is missing', async () => {
@@ -44,6 +51,24 @@ describe('Get Transaction By User Id Controller', () => {
         const response = await sut.execute({
             userId: 'invalid-id',
             query: { from, to },
+        })
+        expect(response.statusCode).toBe(400)
+    })
+
+    it('should return 400 when sortBy is invalid', async () => {
+        const { sut } = makeSut()
+        const response = await sut.execute({
+            userId,
+            query: { sortBy: 'name' },
+        })
+        expect(response.statusCode).toBe(400)
+    })
+
+    it('should return 400 when limit exceeds maximum', async () => {
+        const { sut } = makeSut()
+        const response = await sut.execute({
+            userId,
+            query: { limit: 200 },
         })
         expect(response.statusCode).toBe(400)
     })
@@ -66,11 +91,19 @@ describe('Get Transaction By User Id Controller', () => {
         expect(response.statusCode).toBe(500)
     })
 
-    it('should call GetUserByIdUseCase with userId from auth token', async () => {
+    it('should call GetUserByIdUseCase with userId from auth token and parsed query', async () => {
         const { sut, getUserByIdUseCase } = makeSut()
         const executeSpy = import.meta.jest.spyOn(getUserByIdUseCase, 'execute')
         await sut.execute(baseHttpRequest)
-        expect(executeSpy).toHaveBeenCalledWith(userId, from, to)
+        expect(executeSpy).toHaveBeenCalledWith(
+            userId,
+            expect.objectContaining({
+                page: 1,
+                limit: 10,
+                startDate: from,
+                endDate: to,
+            }),
+        )
     })
 
     it('should ignore userId from query and use auth token userId', async () => {
@@ -83,7 +116,13 @@ describe('Get Transaction By User Id Controller', () => {
             query: { userId: otherUserId, from, to },
         })
 
-        expect(executeSpy).toHaveBeenCalledWith(userId, from, to)
-        expect(executeSpy).not.toHaveBeenCalledWith(otherUserId, from, to)
+        expect(executeSpy).toHaveBeenCalledWith(
+            userId,
+            expect.objectContaining({
+                startDate: from,
+                endDate: to,
+            }),
+        )
+        expect(executeSpy).not.toHaveBeenCalledWith(otherUserId, expect.anything())
     })
 })

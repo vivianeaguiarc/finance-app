@@ -53,14 +53,14 @@ export const makeGetTransactionsByUserIdController = () => {
 export const makeUpdateTransactionController = () => {
     const updateTransactionRepository =
         new PostgresUpdateTransactionRepository()
-    const getUserByIdRepository = new PostgresGetUserByIdRepository()
+    const getTransactionByIdRepository =
+        new PostgresGetTransactionByIdRepository()
     const updateTransactionUseCase = new UpdateTransactionUseCase(
         updateTransactionRepository,
-        getUserByIdRepository,
+        getTransactionByIdRepository,
     )
     const updateTransactionController = new UpdateTransactionController(
         updateTransactionUseCase,
-        getUserByIdRepository,
     )
     return updateTransactionController
 }

@@ -166,6 +166,62 @@ O script `postinstall` executa `prisma generate` para garantir o Prisma Client n
 
 ---
 
+## 📋 Listagem de transações (paginada)
+
+Endpoints: `GET /api/transactions/me` e `GET /api/transactions`
+
+### Query params
+
+| Parâmetro | Descrição | Padrão |
+|-----------|-----------|--------|
+| `page` | Página | `1` |
+| `limit` | Itens por página (máx. 100) | `10` |
+| `type` | `EARNING`, `EXPENSE` ou `INVESTMENT` | — |
+| `startDate` / `endDate` | Filtro por período (ISO 8601) | — |
+| `from` / `to` | Alias legado de `startDate` / `endDate` | — |
+| `minAmount` / `maxAmount` | Filtro por valor | — |
+| `sortBy` | `date`, `amount` ou `createdAt` | `date` |
+| `sortOrder` | `asc` ou `desc` | `desc` |
+
+Parâmetros não listados são rejeitados (ex.: `categoryId`).
+
+### Exemplo
+
+```http
+GET /api/transactions/me?page=1&limit=10&type=EXPENSE&startDate=2024-01-01T00:00:00.000Z&endDate=2024-12-31T23:59:59.999Z&sortBy=date&sortOrder=desc
+Authorization: Bearer <accessToken>
+```
+
+### Resposta
+
+```json
+{
+  "success": true,
+  "message": "Transactions retrieved successfully",
+  "data": [
+    {
+      "id": "uuid",
+      "user_id": "uuid",
+      "name": "Groceries",
+      "type": "EXPENSE",
+      "amount": "150.00",
+      "date": "2024-06-01T00:00:00.000Z",
+      "created_at": "2024-06-01T12:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 42,
+    "totalPages": 5
+  }
+}
+```
+
+> **Breaking change:** listagens de transações agora são paginadas e incluem `meta`. `from`/`to` deixaram de ser obrigatórios.
+
+---
+
 ## 🧰 Scripts
 
 | Comando | Descrição |

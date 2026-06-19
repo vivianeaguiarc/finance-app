@@ -56,6 +56,116 @@ describe('Transaction Routes E2E Tests (com /me)', () => {
         expect(Array.isArray(response.body.data)).toBe(true)
         expect(response.body.data.length).toBeGreaterThan(0)
         expect(response.body.data[0].id).toBe(createdTransaction.id)
+        expect(response.body.meta).toEqual({
+            page: 1,
+            limit: 10,
+            total: 1,
+            totalPages: 1,
+        })
+    })
+
+    it('GET /api/transactions/me → should apply default pagination', async () => {
+        const { token } = await createUserAndLogin()
+
+        const response = await request(app)
+            .get('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+
+        expect(response.status).toBe(200)
+        expect(response.body.meta.page).toBe(1)
+        expect(response.body.meta.limit).toBe(10)
+    })
+
+    it('GET /api/transactions/me → should reject limit above maximum', async () => {
+        const { token } = await createUserAndLogin()
+
+        const response = await request(app)
+            .get('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .query({ limit: 101 })
+
+        expect(response.status).toBe(400)
+    })
+
+    it('GET /api/transactions/me → should filter by type and date range', async () => {
+        const { token } = await createUserAndLogin()
+
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                ...transaction,
+                type: 'EXPENSE',
+                date: new Date(from),
+                id: undefined,
+            })
+
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                ...transaction,
+                name: 'Salary',
+                type: 'EARNING',
+                date: new Date(from),
+                id: undefined,
+            })
+
+        const response = await request(app)
+            .get('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .query({
+                type: 'EXPENSE',
+                startDate: from,
+                endDate: to,
+            })
+
+        expect(response.status).toBe(200)
+        expect(response.body.data).toHaveLength(1)
+        expect(response.body.data[0].type).toBe('EXPENSE')
+    })
+
+    it('GET /api/transactions/me → should accept valid sort params', async () => {
+        const { token } = await createUserAndLogin()
+
+        const response = await request(app)
+            .get('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .query({ sortBy: 'amount', sortOrder: 'asc' })
+
+        expect(response.status).toBe(200)
+    })
+
+    it('GET /api/transactions/me → should reject invalid sortBy', async () => {
+        const { token } = await createUserAndLogin()
+
+        const response = await request(app)
+            .get('/api/transactions/me')
+            .set('Authorization', `Bearer ${token}`)
+            .query({ sortBy: 'name' })
+
+        expect(response.status).toBe(400)
+    })
+
+    it('GET /api/transactions/me → should not return another user transactions', async () => {
+        const owner = await createUser()
+        const otherUser = await createUser()
+
+        await request(app)
+            .post('/api/transactions/me')
+            .set('Authorization', `Bearer ${owner.tokens.accessToken}`)
+            .send({
+                ...transaction,
+                id: undefined,
+            })
+
+        const response = await request(app)
+            .get('/api/transactions/me')
+            .set('Authorization', `Bearer ${otherUser.tokens.accessToken}`)
+
+        expect(response.status).toBe(200)
+        expect(response.body.data).toHaveLength(0)
+        expect(response.body.meta.total).toBe(0)
     })
 
     it('PATCH /api/transactions/me/:id → should update (200)', async () => {
@@ -122,5 +232,6 @@ describe('Transaction Routes E2E Tests (com /me)', () => {
         expect(response.status).toBe(200)
         expect(Array.isArray(response.body.data)).toBe(true)
         expect(response.body.data.length).toBeGreaterThan(0)
+        expect(response.body.meta.total).toBeGreaterThan(0)
     })
 })

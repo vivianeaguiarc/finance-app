@@ -16,6 +16,20 @@ export const ok = (data, message = 'Operation completed successfully') => ({
     },
 })
 
+export const okPaginated = (
+    data,
+    meta,
+    message = 'Operation completed successfully',
+) => ({
+    statusCode: 200,
+    body: {
+        success: true,
+        message,
+        data,
+        meta,
+    },
+})
+
 export const created = (data, message = 'Resource created successfully') => ({
     statusCode: 201,
     body: {

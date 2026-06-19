@@ -21,14 +21,17 @@ model User {
 // Modelando a Tabela de Transações no Prisma
 
 model Transaction {
-  id      String          @id @default(uuid()) 
-  user_id String
-  user    User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  name    String          @db.VarChar(50)
-  date    DateTime        @db.Date
-  amount  Decimal         @db.Decimal(10, 2)
-  type    TransactionType
+  id         String          @id @default(uuid())
+  user_id    String
+  user       User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  name       String          @db.VarChar(50)
+  date       DateTime        @db.Date
+  amount     Decimal         @db.Decimal(10, 2)
+  type       TransactionType
+  created_at DateTime        @default(now()) @map("created_at")
 
+  @@index([user_id])
+  @@index([user_id, date])
   @@map("transactions")
 }
 
