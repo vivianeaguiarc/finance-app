@@ -2,7 +2,6 @@ import {
     checkIfIdIsValid,
     invalidIdResponse,
     ok,
-    forbidden,
     mapErrorToHttpResponse,
 } from '../helpers/index.js'
 

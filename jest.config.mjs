@@ -23,7 +23,6 @@ export default {
     testPathIgnorePatterns: [
         'src/repositories/postgres/transaction/',
         'src/repositories/postgres/user/',
-        'src/routes/transaction.e2e.test.js',
         'src/factories/controllers/user.test.js',
         'src/factories/controllers/transaction.test.js',
     ],
