@@ -1,4 +1,11 @@
-const DEV_ORIGINS = ['http://localhost:3000', 'http://localhost:5173']
+export const CORS_FORBIDDEN_MESSAGE = 'Origin not allowed by CORS policy'
+
+const DEV_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://localhost:5174',
+]
 
 export function getAllowedOrigins() {
     const frontendUrl = process.env.FRONTEND_URL
@@ -10,21 +17,28 @@ export function getAllowedOrigins() {
     return [...DEV_ORIGINS, frontendUrl].filter(Boolean)
 }
 
+export function isOriginAllowed(origin) {
+    if (!origin) {
+        return true
+    }
+
+    return getAllowedOrigins().includes(origin)
+}
+
 export function getCorsOptions() {
     if (process.env.NODE_ENV === 'test') {
         return {}
     }
 
-    const allowedOrigins = getAllowedOrigins()
-
     return {
         origin(origin, callback) {
-            if (!origin || allowedOrigins.includes(origin)) {
+            if (isOriginAllowed(origin)) {
                 callback(null, true)
                 return
             }
 
-            callback(new Error('Not allowed by CORS'))
+            callback(new Error(CORS_FORBIDDEN_MESSAGE))
         },
+        credentials: true,
     }
 }

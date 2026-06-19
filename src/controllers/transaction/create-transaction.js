@@ -8,6 +8,7 @@ import {
 } from '../helpers/index.js'
 
 import { UserNotFoundError } from '../../errors/user.js'
+import { logInternalError } from '../../middlewares/error-handler.js'
 export class CreateTransactionController {
     constructor(createTransactionUseCase) {
         this.createTransactionUseCase = createTransactionUseCase
@@ -29,7 +30,7 @@ export class CreateTransactionController {
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()
             }
-            console.error(error)
+            logInternalError(error)
             return serverError()
         }
     }

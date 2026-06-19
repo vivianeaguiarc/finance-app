@@ -2,29 +2,39 @@ import rateLimit from 'express-rate-limit'
 
 const noopLimiter = (_req, _res, next) => next()
 
+const tooManyRequestsHandler = (message) => (_req, res) => {
+    res.status(429).json({ message })
+}
+
+export function createGlobalLimiter() {
+    return rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 300,
+        standardHeaders: true,
+        legacyHeaders: false,
+        handler: tooManyRequestsHandler(
+            'Too many requests, please try again later.',
+        ),
+    })
+}
+
+export function createAuthLimiter({
+    max = 20,
+    windowMs = 15 * 60 * 1000,
+} = {}) {
+    return rateLimit({
+        windowMs,
+        max,
+        standardHeaders: true,
+        legacyHeaders: false,
+        handler: tooManyRequestsHandler(
+            'Too many authentication attempts, please try again later.',
+        ),
+    })
+}
+
 export const globalLimiter =
-    process.env.NODE_ENV === 'test'
-        ? noopLimiter
-        : rateLimit({
-              windowMs: 15 * 60 * 1000,
-              max: 300,
-              standardHeaders: true,
-              legacyHeaders: false,
-              message: {
-                  message: 'Too many requests, please try again later.',
-              },
-          })
+    process.env.NODE_ENV === 'test' ? noopLimiter : createGlobalLimiter()
 
 export const authLimiter =
-    process.env.NODE_ENV === 'test'
-        ? noopLimiter
-        : rateLimit({
-              windowMs: 15 * 60 * 1000,
-              max: 20,
-              standardHeaders: true,
-              legacyHeaders: false,
-              message: {
-                  message:
-                      'Too many authentication attempts, please try again later.',
-              },
-          })
+    process.env.NODE_ENV === 'test' ? noopLimiter : createAuthLimiter()

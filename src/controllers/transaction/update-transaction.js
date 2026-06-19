@@ -1,6 +1,7 @@
 import { updateTransactionSchema } from '../../schemas/transaction.js'
 import { checkIfIdIsValid, invalidIdResponse, ok } from '../helpers/index.js'
 import { TransactionNotFoundError } from '../../errors/index.js'
+import { logInternalError } from '../../middlewares/error-handler.js'
 
 export class UpdateTransactionController {
     constructor(updateTransactionUseCase) {
@@ -41,10 +42,10 @@ export class UpdateTransactionController {
                 }
             }
 
-            console.error(error)
+            logInternalError(error)
             return {
                 statusCode: 500,
-                body: { error: 'InternalServerError' },
+                body: { message: 'Internal server error' },
             }
         }
     }

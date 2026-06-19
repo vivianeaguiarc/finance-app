@@ -49,7 +49,7 @@ npm install
 
 ### 2. Variáveis de ambiente
 
-Crie um arquivo `.env` na raiz:
+Crie um arquivo `.env` na raiz (use `env.example` como referência):
 
 ```env
 NODE_ENV=development

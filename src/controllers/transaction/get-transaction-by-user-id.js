@@ -49,6 +49,7 @@ import {
 import { UserNotFoundError } from '../../errors/index.js'
 import { ZodError } from 'zod'
 import { getTransactionsByUserIdSchema } from '../../schemas/transaction.js'
+import { logInternalError } from '../../middlewares/error-handler.js'
 
 export class GetTransactionByUserIdController {
     constructor(getTransactionByUserIdUseCase) {
@@ -78,7 +79,7 @@ export class GetTransactionByUserIdController {
 
             return ok(transactions)
         } catch (error) {
-            console.error(error)
+            logInternalError(error)
 
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()

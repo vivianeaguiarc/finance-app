@@ -1,4 +1,5 @@
 import { ok, serverError } from '../helpers/index.js'
+import { logInternalError } from '../../middlewares/error-handler.js'
 
 export class GetTransactionBalanceController {
     constructor(getTransactionBalanceUseCase) {
@@ -12,7 +13,7 @@ export class GetTransactionBalanceController {
                 await this.getTransactionBalanceUseCase.execute(userId)
             return ok(result)
         } catch (error) {
-            console.error('❌ Erro ao buscar saldo de transações:', error)
+            logInternalError(error)
             return serverError()
         }
     }
