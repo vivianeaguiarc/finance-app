@@ -2,6 +2,5 @@ node_modules
 .postgres-data
 .env
 .env.test
-.env.example
-/src/generated/prisma
 coverage/
+.prompts/

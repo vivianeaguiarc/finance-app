@@ -1,5 +1,10 @@
 import { EmailAlreadyInUseError } from '../../errors/user.js'
-import { badRequest, serverError, created } from '../helpers/index.js'
+import {
+    badRequest,
+    serverError,
+    created,
+    sanitizeUserWithTokens,
+} from '../helpers/index.js'
 import { ZodError } from 'zod'
 import { createdUserSchema } from '../../schemas/index.js'
 export class CreateUserController {
@@ -11,7 +16,7 @@ export class CreateUserController {
             const params = httpRequest.body
             await createdUserSchema.parseAsync(params)
             const createdUser = await this.createUserUseCase.execute(params)
-            return created(createdUser)
+            return created(sanitizeUserWithTokens(createdUser))
         } catch (error) {
             if (error instanceof ZodError) {
                 return badRequest({
@@ -21,7 +26,9 @@ export class CreateUserController {
             if (error instanceof EmailAlreadyInUseError) {
                 return badRequest({ message: error.message })
             }
-            console.error(error)
+            if (process.env.NODE_ENV !== 'production') {
+                console.error(error)
+            }
             return serverError()
         }
     }

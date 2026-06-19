@@ -3,7 +3,8 @@ import {
     checkIfIdIsValid,
     invalidIdResponse,
     userNotFoundResponse,
-    noContent, // <--- importar aqui
+    noContent,
+    forbidden,
 } from '../helpers/index.js'
 import { UserNotFoundError } from '../../errors/user.js'
 
@@ -21,19 +22,20 @@ export class DeleteUserController {
                 return invalidIdResponse()
             }
 
-            const deletedUser = await this.deleteUserUseCase.execute(userId)
-
-            if (deletedUser instanceof UserNotFoundError) {
-                return userNotFoundResponse()
+            if (httpRequest.userId && userId !== httpRequest.userId) {
+                return forbidden()
             }
 
-            // 🚀 CORREÇÃO AQUI → retorno correto do DELETE
-            return noContent() // 204, body = null
+            await this.deleteUserUseCase.execute(userId)
+
+            return noContent()
         } catch (error) {
             if (error instanceof UserNotFoundError) {
                 return userNotFoundResponse()
             }
-            console.error(error)
+            if (process.env.NODE_ENV !== 'production') {
+                console.error(error)
+            }
             return serverError()
         }
     }

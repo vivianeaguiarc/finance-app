@@ -7,9 +7,11 @@ export const noContent = () => ({
     body: null,
 })
 
-export const unauthorized = () => ({
+export const unauthorized = (
+    body = { message: 'Invalid email or password' },
+) => ({
     statusCode: 401,
-    body: { message: 'Unauthorized' },
+    body: typeof body === 'string' ? { message: body } : body,
 })
 export const forbidden = () => ({
     statusCode: 403,

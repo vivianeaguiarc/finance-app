@@ -1,20 +1,18 @@
 import { faker } from '@faker-js/faker'
 import { DeleteTransactionUseCase } from './delete-transaction.js'
 import { transaction } from '../../tests/fixtures/index.js'
-import { ForbiddenError } from '../../errors/index.js' // ← CORRETO
+import { ForbiddenError, TransactionNotFoundError } from '../../errors/index.js'
 
 describe('DeleteTransactionUseCase', () => {
     const user_id = faker.string.uuid()
 
     class DeleteTransactionRepositoryStub {
-        async execute(transactionId, userId) {
-            return { ...transaction, user_id }
-        }
+        async execute() {}
     }
 
     class GetTransactionByIdRepositoryStub {
-        async execute(transactionId, userId) {
-            return { ...transaction, user_id }
+        async execute(transactionId) {
+            return { ...transaction, id: transactionId, user_id }
         }
     }
 
@@ -41,7 +39,7 @@ describe('DeleteTransactionUseCase', () => {
 
         const result = await sut.execute(transaction.id, user_id)
 
-        expect(result).toEqual({ ...transaction, user_id })
+        expect(result.user_id).toBe(user_id)
     })
 
     it('should call DeleteTransactionRepository with correct params', async () => {
@@ -59,14 +57,26 @@ describe('DeleteTransactionUseCase', () => {
     })
 
     it('should throw ForbiddenError if user does not own the transaction', async () => {
-        const { sut, deleteTransactionRepository } = makeSut()
+        const { sut, getTransactionByIdRepository } = makeSut()
 
         import.meta.jest
-            .spyOn(deleteTransactionRepository, 'execute')
+            .spyOn(getTransactionByIdRepository, 'execute')
             .mockResolvedValueOnce({ ...transaction, user_id: 'another-user' })
 
         await expect(sut.execute(transaction.id, user_id)).rejects.toThrow(
             ForbiddenError,
+        )
+    })
+
+    it('should throw TransactionNotFoundError if transaction does not exist', async () => {
+        const { sut, getTransactionByIdRepository } = makeSut()
+
+        import.meta.jest
+            .spyOn(getTransactionByIdRepository, 'execute')
+            .mockResolvedValueOnce(null)
+
+        await expect(sut.execute(transaction.id, user_id)).rejects.toThrow(
+            TransactionNotFoundError,
         )
     })
 

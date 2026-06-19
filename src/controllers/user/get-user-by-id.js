@@ -4,6 +4,8 @@ import {
     ok,
     serverError,
     userNotFoundResponse,
+    forbidden,
+    sanitizeUser,
 } from '../helpers/index.js'
 
 export class GetUserByIdController {
@@ -17,15 +19,24 @@ export class GetUserByIdController {
                 return invalidIdResponse()
             }
 
+            if (
+                httpRequest.userId &&
+                httpRequest.params.userId !== httpRequest.userId
+            ) {
+                return forbidden()
+            }
+
             const user = await this.getUserByIdUseCase.execute(
                 httpRequest.params.userId,
             )
             if (!user) {
                 return userNotFoundResponse()
             }
-            return ok(user)
+            return ok(sanitizeUser(user))
         } catch (error) {
-            console.error(error)
+            if (process.env.NODE_ENV !== 'production') {
+                console.error(error)
+            }
             return serverError()
         }
     }

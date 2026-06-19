@@ -1,22 +1,32 @@
-import pkg from '@prisma/client' // Importa o módulo CommonJS como um objeto padrão (default)
-const { PrismaClientKnownRequestError } = pkg // Desestrutura a classe de erro a partir desse objeto
+import pkg from '@prisma/client'
+const { PrismaClientKnownRequestError } = pkg
 import { prisma } from '../../../../prisma/prisma.js'
 import { TransactionNotFoundError } from '../../../errors/index.js'
-// ...
 
 export class PostgresDeleteTransactionRepository {
-    async execute(transactionId) {
+    async execute(transactionId, userId) {
         try {
-            return await prisma.transaction.delete({
-                where: { id: transactionId },
+            const result = await prisma.transaction.deleteMany({
+                where: {
+                    id: transactionId,
+                    user_id: userId,
+                },
             })
+
+            if (result.count === 0) {
+                throw new TransactionNotFoundError(transactionId)
+            }
         } catch (error) {
-            // AQUI O CATCH ESTÁ CORRETO
+            if (error instanceof TransactionNotFoundError) {
+                throw error
+            }
+
             if (error instanceof PrismaClientKnownRequestError) {
                 if (error.code === 'P2025') {
                     throw new TransactionNotFoundError(transactionId)
                 }
             }
+
             throw error
         }
     }

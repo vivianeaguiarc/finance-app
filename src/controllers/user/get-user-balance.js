@@ -3,6 +3,7 @@ import {
     badRequest,
     serverError,
     userNotFoundResponse,
+    forbidden,
 } from '../helpers/index.js'
 import { ZodError } from 'zod'
 import { getUserBalanceSchema } from '../../schemas/index.js'
@@ -17,6 +18,10 @@ export class GetUserBalanceController {
             const userId = httpRequest.params.userId
             const from = httpRequest.query.from
             const to = httpRequest.query.to
+
+            if (httpRequest.userId && userId !== httpRequest.userId) {
+                return forbidden()
+            }
 
             await getUserBalanceSchema.parseAsync({ userId, from, to })
 
@@ -36,7 +41,9 @@ export class GetUserBalanceController {
                 return userNotFoundResponse()
             }
 
-            console.error(error)
+            if (process.env.NODE_ENV !== 'production') {
+                console.error(error)
+            }
             return serverError()
         }
     }

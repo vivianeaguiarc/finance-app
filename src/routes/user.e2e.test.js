@@ -37,6 +37,7 @@ describe('User Routes E2E Tests', () => {
 
         expect(res.status).toBe(201)
         expect(res.body).toHaveProperty('tokens.accessToken')
+        expect(res.body.password).toBeUndefined()
     })
 
     // -----------------------------------------------------------------------------
@@ -49,6 +50,7 @@ describe('User Routes E2E Tests', () => {
 
         expect(res.status).toBe(200)
         expect(res.body.id).toBe(createdUser.id)
+        expect(res.body.password).toBeUndefined()
     })
 
     // -----------------------------------------------------------------------------
@@ -86,6 +88,7 @@ describe('User Routes E2E Tests', () => {
         expect(res.status).toBe(200)
         expect(res.body.tokens.accessToken).toBeDefined()
         expect(res.body.tokens.refreshToken).toBeDefined()
+        expect(res.body.password).toBeUndefined()
     })
 
     // -----------------------------------------------------------------------------

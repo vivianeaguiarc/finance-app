@@ -62,8 +62,9 @@ describe('LoginUserController', () => {
         }
         const response = await sut.execute(httpRequest)
         expect(response.statusCode).toBe(401)
+        expect(response.body.message).toBe('Invalid email or password')
     })
-    it('should return 404 if user is not found', async () => {
+    it('should return 401 if user is not found', async () => {
         const { sut, loginUserUseCase } = makeSut()
         import.meta.jest
             .spyOn(loginUserUseCase, 'execute')
@@ -75,6 +76,13 @@ describe('LoginUserController', () => {
             },
         }
         const response = await sut.execute(httpRequest)
-        expect(response.statusCode).toBe(404)
+        expect(response.statusCode).toBe(401)
+        expect(response.body.message).toBe('Invalid email or password')
+    })
+
+    it('should not return password in response body', async () => {
+        const { sut } = makeSut()
+        const response = await sut.execute(httpRequest)
+        expect(response.body.password).toBeUndefined()
     })
 })

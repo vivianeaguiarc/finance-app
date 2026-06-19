@@ -6,21 +6,19 @@ export class DeleteTransactionUseCase {
         this.getTransactionByIdRepository = getTransactionByIdRepository
     }
     async execute(transactionId, userId) {
-        const transaction = await this.deleteTransactionRepository.execute(
-            transactionId,
-            userId,
-        )
+        const transaction =
+            await this.getTransactionByIdRepository.execute(transactionId)
+
         if (!transaction) {
             throw new TransactionNotFoundError(transactionId)
         }
-        if (transaction.user_id != userId) {
+
+        if (transaction.user_id !== userId) {
             throw new ForbiddenError()
         }
-        const deletedTransaction =
-            await this.getTransactionByIdRepository.execute(
-                transactionId,
-                userId,
-            )
+
+        await this.deleteTransactionRepository.execute(transactionId, userId)
+
         return transaction
     }
 }

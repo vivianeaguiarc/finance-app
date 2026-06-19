@@ -1,142 +1,173 @@
 # 💰 FinanceApp – API de Controle Financeiro Pessoal
 
 ## 🧩 Visão Geral
-O **FinanceApp** é uma aplicação backend desenvolvida em **Node.js** com **Express** e **PostgreSQL**, voltada para o **gerenciamento de finanças pessoais**.  
-A API permite o **cadastro de usuários**, **registro de transações financeiras** (ganhos, despesas e investimentos) e **armazenamento seguro** dos dados em um banco relacional.
 
-Este projeto faz parte do portfólio de **Viviane Aguiar**, com foco em **boas práticas de arquitetura backend**, **integração com banco de dados via Docker** e **padronização de código com ESLint + Prettier + Husky**.
+O **FinanceApp** é uma API backend em **Node.js**, **Express**, **Prisma** e **PostgreSQL** para gestão de finanças pessoais: cadastro de usuários, autenticação JWT, transações (ganhos, despesas, investimentos) e cálculo de saldo.
 
----
+Projeto de portfólio com arquitetura em camadas (controllers, use-cases, repositories, adapters), testes automatizados, CI/CD e documentação Swagger.
 
-## ⚙️ Tecnologias Utilizadas
-- **Node.js** – Ambiente de execução JavaScript no servidor  
-- **Express** – Framework minimalista para construção da API  
-- **PostgreSQL** – Banco de dados relacional robusto  
-- **Docker** – Containerização e ambiente isolado do banco  
-- **Dotenv** – Gerenciamento de variáveis de ambiente  
-- **ESLint + Prettier + Husky + Lint-Staged** – Qualidade e padronização de código  
-- **pg** – Biblioteca de conexão com PostgreSQL  
+**Documentação interativa:** [https://finance-app-i600.onrender.com/docs/](https://finance-app-i600.onrender.com/docs/)
 
 ---
 
-## 🗄️ Estrutura do Banco de Dados
-A estrutura inicial é criada via migrações automatizadas (`exec.js`):
+## ⚙️ Tecnologias
 
-### Tabelas
-- **users**
-  - `id` (UUID, PK)  
-  - `first_name`, `last_name`, `email`, `password`
-
-- **transactions**
-  - `id` (UUID, PK)  
-  - `user_id` (FK → users)  
-  - `name`, `date`, `amount`, `type` (`EARNING`, `EXPENSE`, `INVESTMENT`)
-
-### Tipo ENUM
-- `transaction_type`: Define o tipo de transação (EARNING | EXPENSE | INVESTMENT)
+- Node.js + Express 5
+- PostgreSQL + Prisma ORM
+- JWT (access + refresh token)
+- Zod (validação)
+- Jest + Supertest
+- Swagger UI
+- Helmet + express-rate-limit + CORS restrito
+- Docker Compose
+- GitHub Actions + Render
 
 ---
 
-## 🚀 Como Executar o Projeto
+## 🔐 Segurança
 
-### 1️⃣ Clonar o Repositório
+- Autenticação JWT com rotas protegidas via middleware `auth`
+- Usuário autenticado acessa apenas recursos próprios (`/me`)
+- Hash de senha com bcrypt — **password nunca retornado nas responses**
+- Login com mensagem genérica (anti-enumeração de usuários)
+- CORS restrito por `FRONTEND_URL` em produção
+- Helmet para headers HTTP de segurança
+- Rate limit global + rate limit reforçado em rotas de auth
+- Delete de transações filtrado por `user_id` (403 se não for dono, 404 se não existir)
+
+---
+
+## 🚀 Como Executar Localmente
+
+### 1. Clonar e instalar
+
 ```bash
-git clone https://github.com/vivianeaguiarc/financeapp.git
-cd financeapp
-```
-
-### 2️⃣ Instalar Dependências
-```bash
+git clone https://github.com/vivianeaguiarc/finance-app.git
+cd finance-app
 npm install
 ```
 
-### 3️⃣ Configurar Variáveis de Ambiente
-Crie um arquivo `.env` na raiz do projeto com:
+### 2. Variáveis de ambiente
+
+Crie um arquivo `.env` na raiz:
 
 ```env
-POSTGRES_USER=root
-POSTGRES_PASSWORD=password
-POSTGRES_DB=financeapp
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
+NODE_ENV=development
 PORT=3000
+DATABASE_URL=postgresql://postgres:password@localhost:5432/finance_app
+JWT_ACCESS_SECRET=change_me_to_a_long_random_secret_at_least_32_chars
+JWT_REFRESH_SECRET=change_me_to_another_long_random_secret_at_least_32_chars
+FRONTEND_URL=http://localhost:5173
 ```
 
-### 4️⃣ Iniciar o Banco com Docker
+### 3. Banco de dados (Docker)
+
 ```bash
-docker run -d ^
-  --name finance-app-postgres ^
-  -e POSTGRES_USER=root ^
-  -e POSTGRES_PASSWORD=password ^
-  -e POSTGRES_DB=financeapp ^
-  -v "C:\workspaces\financeapp\.postgres:/var/lib/postgresql/data/pgdata" ^
-  -p 5432:5432 ^
-  postgres:16
+docker compose up -d postgres
 ```
 
-### 5️⃣ Rodar as Migrações
+### 4. Migrations Prisma
+
 ```bash
-npm run migrations
+npx prisma migrate deploy
+# ou em dev:
+npx prisma migrate dev
 ```
 
-### 6️⃣ Iniciar o Servidor
+### 5. Iniciar servidor
+
 ```bash
-npm run start:dev
+npm run dev
 ```
 
-A aplicação estará disponível em:
-```
-http://localhost:3000
-```
-https://finance-app-i600.onrender.com/docs/
----
-
-## 🧠 Funcionalidades Principais
-- Cadastro de usuários  
-- Registro e listagem de transações financeiras  
-- Categorização de transações (ganho, despesa, investimento)  
-- Persistência de dados com PostgreSQL  
-- Execução automatizada de migrações  
+API disponível em `http://localhost:3000`  
+Swagger em `http://localhost:3000/docs`
 
 ---
 
-## 🧰 Scripts Disponíveis
+## 🧪 Testes
+
+```bash
+npm test
+npm run test:ci
+```
+
+Requer PostgreSQL de teste (porta `5434` via `docker compose up -d postgres-test`) e `.env.test` com `DATABASE_URL` apontando para o banco de teste.
+
+---
+
+## ☁️ Deploy no Render
+
+1. Criar Web Service apontando para este repositório
+2. **Build Command:** `npm install && npx prisma migrate deploy`
+3. **Start Command:** `npm start`
+4. Configurar variáveis de ambiente:
+
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | Connection string PostgreSQL |
+| `JWT_ACCESS_SECRET` | Segredo do access token (≥ 32 chars) |
+| `JWT_REFRESH_SECRET` | Segredo do refresh token (≥ 32 chars) |
+| `FRONTEND_URL` | URL do frontend (CORS em produção) |
+| `NODE_ENV` | `production` |
+| `PORT` | Definido automaticamente pelo Render |
+
+O script `postinstall` executa `prisma generate` para garantir o Prisma Client no deploy.
+
+---
+
+## 📡 Autenticação
+
+1. `POST /api/users` — registrar
+2. `POST /api/users/login` — obter tokens
+3. Enviar header: `Authorization: Bearer <accessToken>`
+4. `POST /api/users/refresh-token` — renovar tokens
+
+---
+
+## 🧰 Scripts
+
 | Comando | Descrição |
-|----------|------------|
-| `npm run start` | Inicia o servidor em modo produção |
-| `npm run start:dev` | Inicia o servidor com monitoramento automático (`--watch`) |
-| `npm run lint` | Executa verificação de estilo com ESLint |
-| `npm run migrations` | Executa as migrações do banco de dados |
+|---------|-----------|
+| `npm start` | Produção |
+| `npm run dev` | Desenvolvimento com `--watch` |
+| `npm test` | Testes |
+| `npm run test:ci` | Testes + coverage (CI) |
+| `npm run migrations` | `prisma migrate deploy` |
+| `npm run eslint:check` | ESLint |
+| `npm run prettier:check` | Prettier |
 
 ---
 
-## 🧱 Estrutura de Pastas
+## 🧱 Estrutura
+
 ```
 src/
- ├── controllers/        # Controladores da API
- ├── db/
- │    ├── postgres/
- │    │    ├── migrations/  # Scripts SQL e exec.js
- │    │    └── helper.js    # Conexão com o banco
- ├── use-cases/          # Casos de uso da aplicação
- ├── helpers/            # Funções utilitárias
- └── index.js            # Ponto de entrada do servidor
+├── adapters/       # bcrypt, JWT, UUID
+├── config/         # CORS
+├── controllers/    # HTTP handlers
+├── factories/      # Composition root
+├── middlewares/    # auth, rate-limit, ensure-self
+├── repositories/   # Prisma
+├── routes/
+├── schemas/        # Zod
+└── use-cases/
+prisma/
+├── schema.prisma
+└── migrations/
+docs/swagger.json
 ```
 
 ---
 
 ## 👩‍💻 Autora
-**Viviane Aguiar**  
-Fullstack Developer | Especialista em Arquitetura de Software  
 
+**Viviane Aguiar**  
 📍 Juiz de Fora – MG, Brasil  
-🔗 [LinkedIn](https://www.linkedin.com/in/vivianeaguiarc)  
-📧 vivianeaguiarc@outlook.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/vivianeaguiarc)
 
 ---
 
 ## 🏁 Licença
-Este projeto foi desenvolvido para fins educacionais e demonstração de portfólio.  
-Sinta-se à vontade para clonar, estudar e adaptar conforme suas necessidades.
 
----
+Projeto educacional e de portfólio. Sinta-se à vontade para clonar e estudar.

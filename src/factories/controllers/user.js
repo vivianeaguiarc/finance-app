@@ -53,10 +53,7 @@ export const makeCreateUserController = () => {
         idGeneratorAdapter,
         tokenGeneratorAdapter,
     )
-    const createUserController = new CreateUserController(
-        createUserUseCase,
-        tokenGeneratorAdapter,
-    )
+    const createUserController = new CreateUserController(createUserUseCase)
     return createUserController
 }
 

@@ -66,4 +66,21 @@ describe('GetUserById Controller', () => {
 
         expect(executeSpy).toHaveBeenCalledWith(baseHttpRequest.params.userId)
     })
+
+    it('should return 403 when authenticated user tries to access another user', async () => {
+        const { sut } = makeSut()
+
+        const result = await sut.execute({
+            ...baseHttpRequest,
+            userId: faker.string.uuid(),
+        })
+
+        expect(result.statusCode).toBe(403)
+    })
+
+    it('should not return password in response body', async () => {
+        const { sut } = makeSut()
+        const result = await sut.execute(baseHttpRequest)
+        expect(result.body.password).toBeUndefined()
+    })
 })

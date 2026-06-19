@@ -9,6 +9,7 @@ import {
     makeRefreshTokenController,
 } from '../factories/controllers/user.js'
 import { auth } from '../middlewares/auth.js'
+import { authLimiter } from '../middlewares/rate-limit.js'
 
 export const usersRouter = Router()
 
@@ -16,19 +17,19 @@ export const usersRouter = Router()
 // ROTAS PÚBLICAS (SEM AUTH)
 // ------------------------
 
-usersRouter.post('/', async (req, res) => {
+usersRouter.post('/', authLimiter, async (req, res) => {
     const controller = makeCreateUserController()
     const { statusCode, body } = await controller.execute(req)
     res.status(statusCode).send(body)
 })
 
-usersRouter.post('/login', async (req, res) => {
+usersRouter.post('/login', authLimiter, async (req, res) => {
     const controller = makeLoginUserController()
     const { statusCode, body } = await controller.execute(req)
     res.status(statusCode).send(body)
 })
 
-usersRouter.post('/refresh-token', async (req, res) => {
+usersRouter.post('/refresh-token', authLimiter, async (req, res) => {
     const controller = makeRefreshTokenController()
     const { statusCode, body } = await controller.execute(req)
     res.status(statusCode).send(body)
@@ -42,6 +43,7 @@ usersRouter.get('/me', auth, async (req, res) => {
     const controller = makeGetUserByIdController()
     const { statusCode, body } = await controller.execute({
         ...req,
+        userId: req.userId,
         params: { userId: req.userId },
         query: { from: req.query.from, to: req.query.to },
     })
@@ -52,6 +54,7 @@ usersRouter.get('/me/balance', auth, async (req, res) => {
     const controller = makeGetUserBalanceController()
     const { statusCode, body } = await controller.execute({
         ...req,
+        userId: req.userId,
         params: { userId: req.userId },
         query: req.query,
     })
@@ -62,6 +65,7 @@ usersRouter.patch('/me', auth, async (req, res) => {
     const controller = makeUpdateUserController()
     const { statusCode, body } = await controller.execute({
         ...req,
+        userId: req.userId,
         params: { userId: req.userId },
     })
     res.status(statusCode).send(body)
@@ -71,17 +75,8 @@ usersRouter.delete('/me', auth, async (req, res) => {
     const controller = makeDeleteUserController()
     const { statusCode, body } = await controller.execute({
         ...req,
+        userId: req.userId,
         params: { userId: req.userId },
     })
-    res.status(statusCode).send(body)
-})
-
-// ------------------------
-// ROTA DINÂMICA — SEMPRE POR ÚLTIMO
-// ------------------------
-
-usersRouter.get('/:userId', auth, async (req, res) => {
-    const controller = makeGetUserByIdController()
-    const { statusCode, body } = await controller.execute(req)
     res.status(statusCode).send(body)
 })

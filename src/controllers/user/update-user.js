@@ -12,6 +12,7 @@ import {
     serverError,
     userNotFoundResponse,
     forbidden,
+    sanitizeUser,
 } from '../helpers/index.js'
 import { ZodError } from 'zod'
 
@@ -29,6 +30,10 @@ export class UpdateUserController {
                 return invalidIdResponse()
             }
 
+            if (httpRequest.userId && userId !== httpRequest.userId) {
+                return forbidden()
+            }
+
             const params = httpRequest.body
 
             await updatedUserSchema.parseAsync(params)
@@ -38,14 +43,11 @@ export class UpdateUserController {
                 params,
             )
 
-            // 🚀 REMOVER SENHA DA RESPOSTA
-            if (updatedUser.password) {
-                delete updatedUser.password
-            }
-
-            return ok(updatedUser)
+            return ok(sanitizeUser(updatedUser))
         } catch (error) {
-            console.error(error)
+            if (process.env.NODE_ENV !== 'production') {
+                console.error(error)
+            }
 
             if (error instanceof ZodError) {
                 return badRequest({

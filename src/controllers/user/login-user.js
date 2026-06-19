@@ -3,7 +3,7 @@ import {
     ok,
     badRequest,
     unauthorized,
-    notFound,
+    sanitizeUserWithTokens,
 } from '../helpers/index.js'
 
 import { loginSchema } from '../../schemas/index.js'
@@ -25,23 +25,22 @@ export class LoginUserController {
                 params.password,
             )
 
-            return ok(user)
+            return ok(sanitizeUserWithTokens(user))
         } catch (error) {
-            // 400 - payload inválido
             if (error instanceof ZodError) {
                 return badRequest({ message: error.issues[0].message })
             }
 
-            // 401 - senha inválida
-            if (error instanceof InvalidPasswordError) {
-                return unauthorized(error.message)
+            if (
+                error instanceof InvalidPasswordError ||
+                error instanceof UserNotFoundError
+            ) {
+                return unauthorized()
             }
 
-            // 404 - usuário não encontrado
-            if (error instanceof UserNotFoundError) {
-                return notFound(error.message)
+            if (process.env.NODE_ENV !== 'production') {
+                console.error(error)
             }
-
             return serverError()
         }
     }
