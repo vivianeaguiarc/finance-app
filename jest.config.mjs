@@ -6,7 +6,7 @@ export default {
 
     moduleFileExtensions: ['js', 'json'],
 
-    setupFiles: ['dotenv/config'],
+    setupFiles: ['<rootDir>/jest.env.mjs'],
 
     setupFilesAfterEnv: ['<rootDir>/jest.setup.mjs'],
 

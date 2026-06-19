@@ -128,12 +128,61 @@ Swagger em `http://localhost:3000/docs`
 
 ## 🧪 Testes
 
+O projeto usa **Jest + Supertest** com testes unitários e de **integração** (fluxos reais da API contra PostgreSQL isolado).
+
+### Pré-requisitos
+
+1. Subir o banco de teste:
+
 ```bash
+docker compose up -d postgres-test
+```
+
+2. Criar `.env.test` a partir do exemplo:
+
+```bash
+cp env.test.example .env.test
+```
+
+3. Aplicar migrations no banco de teste:
+
+```bash
+dotenv -e .env.test -- npx prisma migrate deploy
+```
+
+### Variáveis de ambiente de teste
+
+| Variável | Descrição |
+|----------|-----------|
+| `NODE_ENV` | Deve ser `test` |
+| `DATABASE_URL` | Banco isolado (ex.: `finance_app_test` na porta `5434`) |
+| `JWT_ACCESS_SECRET` | Segredo do access token (≥ 32 chars) |
+| `JWT_REFRESH_SECRET` | Segredo do refresh token (≥ 32 chars) |
+| `FRONTEND_URL` | URL usada pelo CORS nos testes |
+
+> Os testes de integração **recusam** rodar se `DATABASE_URL` não apontar para um banco de teste ou se detectarem URLs de produção (Neon, Render, etc.).
+
+### Executar
+
+```bash
+# Todos os testes (unitários + integração)
 npm test
+
+# Mesmo comando usado no CI (com coverage)
 npm run test:ci
 ```
 
-Requer PostgreSQL de teste (porta `5434` via `docker compose up -d postgres-test`) e `.env.test` com `DATABASE_URL` apontando para o banco de teste.
+### Estrutura
+
+```
+src/tests/integration/
+├── database.js              # reset do banco + validação de ambiente
+├── helpers.js               # factories (usuário, transação, auth)
+├── auth.integration.test.js
+└── transactions.integration.test.js
+```
+
+Os testes de integração limpam `users` e `transactions` entre casos (`afterEach`).
 
 ---
 
