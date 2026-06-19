@@ -6,7 +6,13 @@ import { user } from '../../tests/fixtures/index.js'
 describe('Create User Controller', () => {
     class CreateUserUseCaseStub {
         async execute() {
-            return user
+            return {
+                ...user,
+                tokens: {
+                    accessToken: 'access-token',
+                    refreshToken: 'refresh-token',
+                },
+            }
         }
     }
 
@@ -27,7 +33,17 @@ describe('Create User Controller', () => {
         const { sut } = makeSut()
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(201)
-        expect(result.body).toEqual(user)
+        expect(result.body.password).toBeUndefined()
+        expect(result.body).toMatchObject({
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            tokens: {
+                accessToken: 'access-token',
+                refreshToken: 'refresh-token',
+            },
+        })
     })
 
     it('should return 400 if first_name is not provided', async () => {

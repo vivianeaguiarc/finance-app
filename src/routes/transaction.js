@@ -15,6 +15,7 @@ transactionsRouter.post('/me', auth, async (request, response) => {
 
     const { statusCode, body } = await controller.execute({
         ...request,
+        userId: request.userId,
         body: {
             ...request.body,
             user_id: request.userId,
@@ -30,6 +31,7 @@ transactionsRouter.get('/me', auth, async (request, response) => {
 
     const { statusCode, body } = await controller.execute({
         ...request,
+        userId: request.userId,
         params: { userId: request.userId },
         query: request.query,
     })
@@ -41,10 +43,8 @@ transactionsRouter.get('/', auth, async (request, response) => {
 
     const { statusCode, body } = await controller.execute({
         ...request,
-        query: {
-            ...request.query,
-            user_id: request.userId,
-        },
+        userId: request.userId,
+        query: request.query,
     })
 
     response.status(statusCode).send(body)
@@ -57,7 +57,7 @@ transactionsRouter.post('/', auth, async (request, response) => {
         ...request,
         body: {
             ...request.body,
-            user_id: request.userId, // força user logado
+            user_id: request.userId,
         },
     })
 
@@ -72,6 +72,7 @@ transactionsRouter.patch(
 
         const { statusCode, body } = await controller.execute({
             ...request,
+            userId: request.userId,
             body: {
                 ...request.params,
                 user_id: request.userId,
@@ -90,6 +91,7 @@ transactionsRouter.delete(
 
         const { statusCode, body } = await controller.execute({
             ...request,
+            userId: request.userId,
             params: {
                 transactionId: request.params.transactionId,
                 user_id: request.userId,

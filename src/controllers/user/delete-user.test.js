@@ -45,10 +45,21 @@ describe('Delete User Controller', () => {
 
         import.meta.jest
             .spyOn(deleteUserUseCase, 'execute')
-            .mockResolvedValueOnce(new UserNotFoundError())
+            .mockRejectedValueOnce(new UserNotFoundError())
 
         const result = await sut.execute(httpRequest)
         expect(result.statusCode).toBe(404)
+    })
+
+    it('should return 403 when authenticated user tries to delete another user', async () => {
+        const { sut } = makeSut()
+
+        const result = await sut.execute({
+            params: { userId: faker.string.uuid() },
+            userId: faker.string.uuid(),
+        })
+
+        expect(result.statusCode).toBe(403)
     })
 
     it('shoult return 500 if DeleteUserUseCase throws', async () => {

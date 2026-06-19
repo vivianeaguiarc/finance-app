@@ -87,10 +87,9 @@ describe('Update Transaction Use Case', () => {
 
         await sut.execute(id, updateData)
 
-        expect(updateTransactionRepository.execute).toHaveBeenCalledWith(
-            id,
-            updateData,
-        )
+        expect(updateTransactionRepository.execute).toHaveBeenCalledWith(id, {
+            amount: 500,
+        })
     })
 
     it('should throw if UpdateTransactionRepository throws', async () => {
