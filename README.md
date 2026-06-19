@@ -955,6 +955,17 @@ O job `migrate` (apenas em `main`) aplica migrations no banco de produção **an
 4. No **Render**, o build **não** deve usar `npx prisma migrate deploy` direto — use `npm run migrations`.
 5. Nos logs do CI, confira a linha `Prisma migrate deploy target host:` — o host **não** deve conter `-pooler`.
 
+**Erro `P3018` / `relation "transactions" does not exist`**
+
+Migrations são aplicadas na ordem do **timestamp** no nome da pasta. Se uma migration de `ALTER TABLE transactions` rodar antes do `init`, o deploy falha. Após corrigir a ordem, em bancos com tentativa falha registrada:
+
+```bash
+npx prisma migrate resolve --rolled-back 20250620120000_add_categories_recurring_installments_budgets
+npm run migrations
+```
+
+Em banco Neon **novo/vazio**, basta rodar `npm run migrations` após o push com a ordem corrigida.
+
 ---
 
 ## Scripts npm
