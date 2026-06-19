@@ -45,7 +45,7 @@ Este projeto implementa essa base com foco em **segurança**, **clareza de contr
 | **Categorias** | Filtro por `type` (tipo de transação). *CRUD de categorias ainda não implementado — ver Roadmap* |
 | **Documentação** | Swagger UI em `/docs` com exemplos e schemas padronizados |
 | **Segurança** | Helmet, CORS restrito, rate limit, validação Zod, erros padronizados |
-| **DevOps** | CI (GitHub Actions), deploy no Render, Docker Compose para PostgreSQL |
+| **DevOps** | CI (GitHub Actions), deploy no Render, Docker Compose (API + Postgres + Redis) |
 
 ---
 
@@ -350,6 +350,8 @@ docker compose up -d redis
 REDIS_URL=redis://localhost:6379
 ```
 
+Com a stack Docker completa (`npm run docker:up`), use `REDIS_URL=redis://redis:6379` via `.env.docker`.
+
 Sem `REDIS_URL`, o fallback in-memory é usado (útil em testes e dev simples).
 
 ---
@@ -470,10 +472,16 @@ O `postinstall` executa `prisma generate` automaticamente.
 
 Copie `env.example` para `.env` e ajuste os valores (veja seção abaixo).
 
-### 3. Subir o banco (Docker)
+### 3. Subir infraestrutura (Docker — opcional)
+
+**Opção A — stack completa (API + Postgres + Redis):** veja [Rodando com Docker](#rodando-com-docker).
+
+**Opção B — apenas banco/cache para dev local com `npm run dev`:**
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres redis
+# testes de integração:
+npm run docker:test:up
 ```
 
 ### 4. Migrations
@@ -492,6 +500,102 @@ npm run dev
 
 - API: [http://localhost:3000](http://localhost:3000)
 - Swagger: [http://localhost:3000/docs](http://localhost:3000/docs)
+
+---
+
+## Rodando com Docker
+
+Ambiente local completo em um comando: **API**, **PostgreSQL** e **Redis** na rede interna do Compose. Ideal para demo, onboarding e validação sem instalar Node/Postgres na máquina.
+
+### Requisitos
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (ou Docker Engine + Compose v2)
+- Porta **3000** livre no host
+
+### Comandos
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/vivianeaguiarc/finance-app.git
+cd finance-app
+
+# 2. (Opcional) Personalizar variáveis Docker
+cp .env.docker.example .env.docker
+
+# 3. Subir tudo — build, migrations e API
+npm run docker:up
+
+# Acompanhar logs
+npm run docker:logs
+
+# Rodar migrations manualmente (se necessário)
+npm run docker:migrate
+
+# Parar containers
+npm run docker:down
+```
+
+### Serviços no Compose
+
+| Serviço | Container | Host | Descrição |
+|---------|-----------|------|-----------|
+| `app` | `financeapp-api` | [localhost:3000](http://localhost:3000) | API Node.js/Express |
+| `postgres` | `financeapp-postgres` | rede interna | PostgreSQL 16 (dados persistidos) |
+| `redis` | `financeapp-redis` | rede interna | Cache Redis 7 |
+| `postgres-test` | `financeapp-postgres-test` | `localhost:5434` | Perfil `test` — banco para Jest |
+
+Postgres e Redis **não** expõem portas no host por padrão (apenas a API na 3000). O perfil de teste expõe `5434` para integração local.
+
+### Migrations (Prisma)
+
+No startup, o container `app` executa automaticamente:
+
+```bash
+npx prisma migrate deploy
+```
+
+Comandos úteis:
+
+| Comando | Quando usar |
+|---------|-------------|
+| `npm run docker:migrate` | Reaplicar migrations no container |
+| `docker compose exec app npx prisma generate` | Regenerar client Prisma |
+| `npx prisma migrate dev` | Desenvolvimento **fora** do Docker (com `.env` local) |
+
+### Swagger e health check
+
+| URL | Descrição |
+|-----|-----------|
+| [http://localhost:3000/docs](http://localhost:3000/docs) | Swagger UI |
+| [http://localhost:3000/health](http://localhost:3000/health) | Health check (API + banco) |
+| [http://localhost:3000/](http://localhost:3000/) | Status leve + links |
+
+### Variáveis Docker
+
+Copie `.env.docker.example` → `.env.docker`. Placeholders seguros — **nunca** commite `.env.docker` com segredos reais de produção.
+
+```env
+DATABASE_URL=postgresql://postgres:password@postgres:5432/finance_app
+REDIS_URL=redis://redis:6379
+```
+
+### Troubleshooting
+
+| Problema | Solução |
+|----------|---------|
+| Porta 3000 em uso | Pare outro processo ou altere `ports` no `docker-compose.yml` |
+| `app` reiniciando | `npm run docker:logs` — verifique migrations/Postgres |
+| Migrations pendentes | `npm run docker:migrate` |
+| Limpar volumes | `docker compose down -v` (apaga dados do Postgres) |
+| Rebuild após mudanças | `docker compose up -d --build` |
+
+### Testes de integração (host)
+
+```bash
+npm run docker:test:up
+cp env.test.example .env.test
+npm test
+```
 
 ---
 
@@ -542,7 +646,7 @@ Stack: **Jest + Supertest**. Cobertura em camadas (controllers, use cases, schem
 
 ```bash
 # Banco de teste
-docker compose up -d postgres-test
+npm run docker:test:up
 cp env.test.example .env.test
 dotenv -e .env.test -- npx prisma migrate deploy
 
@@ -580,7 +684,13 @@ CI no GitHub Actions valida lint, Prettier, migrations e testes antes do deploy.
 | `npm run test:ci` | Testes com coverage (CI) |
 | `npm run migrations` | `prisma migrate deploy` |
 | `npm run eslint:check` | ESLint |
-| `npm run prettier:check` | Prettier |
+| `npm run prettier:check` | Prettier (check) |
+| `npm run format` | Prettier (write) |
+| `npm run docker:up` | Stack Docker completa (build + up) |
+| `npm run docker:down` | Parar containers |
+| `npm run docker:logs` | Logs da API |
+| `npm run docker:migrate` | Migrations no container |
+| `npm run docker:test:up` | Postgres de teste (perfil `test`) |
 
 ---
 
@@ -590,7 +700,6 @@ CI no GitHub Actions valida lint, Prettier, migrations e testes antes do deploy.
 - [ ] Frontend integrado (React/Vue) consumindo a API
 - [ ] Cobertura de testes ampliada (repositórios, edge cases)
 - [ ] CI/CD com ambientes de preview
-- [ ] Docker Compose unificado (API + Postgres) para onboarding em um comando
 - [ ] Endpoint `GET /transactions/:id`
 
 ---

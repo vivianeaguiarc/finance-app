@@ -16,7 +16,13 @@
         "start": "node index.js",
         "eslint:check": "eslint src --ext .js",
         "prettier:check": "prettier --check src",
-        "format": "prettier --write src"
+        "format": "prettier --write src",
+        "docker:setup": "node -e \"const fs=require('fs'); if(!fs.existsSync('.env.docker')) fs.copyFileSync('.env.docker.example','.env.docker');\"",
+        "docker:up": "npm run docker:setup && docker compose up -d --build",
+        "docker:down": "docker compose down",
+        "docker:logs": "docker compose logs -f app",
+        "docker:migrate": "docker compose exec app npx prisma migrate deploy",
+        "docker:test:up": "docker compose --profile test up -d postgres-test"
     },
     "repository": {
         "type": "git",
